@@ -3,6 +3,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+if [[ ! -d "$SCRIPT_DIR/node_modules" ]]; then
+  echo "Error: node_modules not found. Run 'npm install' first." >&2
+  exit 1
+fi
+
 # Check for --no-env flag
 NO_ENV=false
 ARGS=()
