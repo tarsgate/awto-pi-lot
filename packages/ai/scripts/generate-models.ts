@@ -172,6 +172,43 @@ async function fetchAiGatewayModels(): Promise<Model<any>[]> {
 	}
 }
 
+async function fetchPpqModels(): Promise<Model<any>[]> {
+	try {
+		console.log("Fetching models from PPQ.ai...");
+		const response = await fetch("https://api.ppq.ai/v1/models");
+		const data = await response.json();
+
+		const models: Model<any>[] = [];
+
+		// tool support ???
+		for (const model of data.data) {
+			models.push({
+				id: model.id,
+				name: model.name,
+				api: "openai-completions",
+				baseUrl: "https://api.ppq.ai",
+				provider: "ppq",
+				reasoning: false, // ???
+				input: ["text"],
+				cost: {
+					input: model.pricing.input_per_1M_tokens,
+					output: model.pricing.output_per_1M_tokens,
+					cacheRead: 0,
+					cacheWrite: 0,
+				},
+				contextWindow: model.context_length,
+				maxTokens: 4096,
+			});
+		}
+
+		console.log(`Fetched ${models.length} models from PPQ.ai`);
+		return models;
+	} catch (error) {
+		console.error("Failed to fetch PPQ.ai models:", error);
+		return [];
+	}
+}
+
 async function loadModelsDevData(): Promise<Model<any>[]> {
 	try {
 		console.log("Fetching models from models.dev API...");
@@ -637,34 +674,6 @@ async function loadModelsDevData(): Promise<Model<any>[]> {
 	}
 }
 
-const PPQ_BASE_URL = "https://api.ppq.ai";
-const ppqModels: Model<"openai-completions">[] = [
-	{
-		id: "claude-opus-4.6",
-		name: "Claude Opus 4.6",
-		api: "openai-completions",
-		provider: "ppq",
-		baseUrl: PPQ_BASE_URL,
-		reasoning: false,
-		input: ["text"],
-		cost: { input: 5.25, output: 26.25, cacheRead: 0, cacheWrite: 0 },
-		contextWindow: 1000000,
-		maxTokens: 4096,
-	},
-	{
-		id: "gpt-5.2-codex",
-		name: "GPT-5.2-Codex",
-		api: "openai-completions",
-		provider: "ppq",
-		baseUrl: PPQ_BASE_URL,
-		reasoning: false,
-		input: ["text"],
-		cost: { input: 1.84, output: 14.70, cacheRead: 0, cacheWrite: 0 },
-		contextWindow: 400000,
-		maxTokens: 4096,
-	},
-];
-
 async function generateModels() {
 	// Fetch models from both sources
 	// models.dev: Anthropic, Google, OpenAI, Groq, Cerebras
@@ -673,6 +682,7 @@ async function generateModels() {
 	const modelsDevModels = await loadModelsDevData();
 	const openRouterModels = await fetchOpenRouterModels();
 	const aiGatewayModels = await fetchAiGatewayModels();
+	const ppqModels = await fetchPpqModels();
 
 	// Combine models (models.dev has priority)
 	const allModels = [...modelsDevModels, ...openRouterModels, ...aiGatewayModels, ...ppqModels].filter(
