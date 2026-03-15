@@ -8,6 +8,11 @@ if [[ ! -d "$SCRIPT_DIR/node_modules" ]]; then
   exit 1
 fi
 
+if [[ "$(pwd)" != "$SCRIPT_DIR" ]]; then
+  echo "Error: must be run from $SCRIPT_DIR (current dir is $(pwd))." >&2
+  exit 1
+fi
+
 # Check for --no-env flag
 NO_ENV=false
 ARGS=()
