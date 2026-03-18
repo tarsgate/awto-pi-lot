@@ -7,7 +7,7 @@ import {
 	type SimpleStreamOptions,
 	type StreamFunction,
 	type StreamOptions,
-} from "@mariozechner/pi-ai";
+} from "@knocte/pi-ai";
 
 interface LazyBedrockProviderModule {
 	streamBedrock: StreamFunction<"bedrock-converse-stream", StreamOptions>;
@@ -51,7 +51,7 @@ function createLazyLoadErrorMessage(model: Model<"bedrock-converse-stream">, err
 
 function loadBedrockProviderModule(): Promise<LazyBedrockProviderModule> {
 	if (!bedrockProviderModulePromise) {
-		bedrockProviderModulePromise = import("@mariozechner/pi-ai/bedrock-provider").then(
+		bedrockProviderModulePromise = import("@knocte/pi-ai/bedrock-provider").then(
 			({ bedrockProviderModule }) => {
 				return {
 					streamBedrock: (model, context, options) => {

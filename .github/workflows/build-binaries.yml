@@ -1,4 +1,4 @@
-name: Build Binaries
+name: Publish & Build Binaries
 
 on:
   push:
@@ -15,7 +15,52 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  bin-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev fd-find ripgrep
+          sudo ln -s $(which fdfind) /usr/local/bin/fd
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish pi-ai to npm
+        run: npm publish --workspace packages/ai --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish pi-tui to npm
+        run: npm publish --workspace packages/tui --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish pi-agent-core to npm
+        run: npm publish --workspace packages/agent --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish awto-pi-lot to npm
+        run: npm publish --workspace packages/coding-agent --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  bin-build:
+    needs: bin-publish
     runs-on: ubuntu-latest
     env:
       RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
@@ -77,3 +122,4 @@ jobs:
             pi-linux-arm64.tar.gz \
             pi-windows-x64.zip \
             --clobber
+

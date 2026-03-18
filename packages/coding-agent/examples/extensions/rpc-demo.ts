@@ -17,7 +17,7 @@
  * - setEditorText() - via /rpc-prefill command
  */
 
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI } from "awto-pi-lot";
 
 export default function (pi: ExtensionAPI) {
 	let turnCount = 0;

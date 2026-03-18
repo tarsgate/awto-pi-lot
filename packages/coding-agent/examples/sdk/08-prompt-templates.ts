@@ -9,7 +9,7 @@ import {
 	DefaultResourceLoader,
 	type PromptTemplate,
 	SessionManager,
-} from "@mariozechner/pi-coding-agent";
+} from "awto-pi-lot";
 
 // Define custom templates
 const deployTemplate: PromptTemplate = {
