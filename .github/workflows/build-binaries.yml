@@ -12,6 +12,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Verify version matches tag
+        run: |
+          # Extract tag version (remove 'v' prefix if present)
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+
+          # Get version from package.json
+          PKG_VERSION=$(node -p "require('./package.json').version")
+
+          echo "Git tag version: $TAG_VERSION"
+          echo "Package.json version: $PKG_VERSION"
+
+          # Compare versions
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "ERROR: Git tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+
+          echo "✓ Versions match!"
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
