@@ -4,6 +4,12 @@ on:
   push:
   pull_request:
 
+  workflow_dispatch:
+
+  # to execute once a day (more info see https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule )
+  schedule:
+    - cron: "0 0 * * *"
+
 concurrency:
   group: ci-${{ github.sha }}
   cancel-in-progress: true
@@ -32,3 +38,45 @@ jobs:
 
       - name: Check
         run: npm run check
+
+  nodeJsBaselineAptCompatibilityCheckOfUpstreamPiRepo:
+    name: NodeJS installed from stock Ubuntu-LTS packages (not external sources)
+
+    # TODO: change to 26.04 when it is released
+    runs-on: ubuntu-24.04
+    container:
+      image: "ubuntu:26.04"
+    steps:
+      - name: Install dependencies
+        run: |
+          apt update --yes
+
+          # NOTE: do not change the below with an `actions/setup-node` step! or it
+          # would make this CI job entirely pointless
+          apt install --yes npm git wget
+
+      - name: Print versions
+        run: node --version && npm --version
+
+      - name: Test Pi from git main branch with NodeJS version from latest Ubuntu LTS
+        run: |
+          git clone https://github.com/badlogic/pi-mono.git
+          cd pi-mono
+          npm install
+          npm run build
+          npm run check
+          ./test.sh
+          ./pi-test.sh --version
+          ./pi-test.sh --version > ../last_version.txt 2>&1
+          cd ..
+          rm -rf pi-mono
+
+      - name: Download and Install latest Pi release
+        run: |
+          VERSION=$(cat last_version.txt)
+          URL="https://github.com/badlogic/pi-mono/releases/download/v${VERSION}/pi-linux-x64.tar.gz"
+          wget "$URL"
+          tar -xzf "pi-linux-x64.tar.gz"
+          ./pi/pi install git:github.com/nblockchain/awto-pi-lot
+          ./pi/pi --version
+
