@@ -15,6 +15,9 @@
 		"prepare": "husky"
 	},
 	"keywords": [
+		"pi",
+		"pi-package",
+		"pi-extension",
 		"coding-agent",
 		"ai",
 		"llm",
