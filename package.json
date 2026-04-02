@@ -50,6 +50,7 @@
 	},
 	"devDependencies": {
 		"@earendil-works/pi-coding-agent": "0.79.9",
+		"@opencode-ai/plugin": "1.4.6",
 		"prettier": "2.8.3",
 		"@biomejs/biome": "2.3.5",
 		"@types/node": "22.10.5",

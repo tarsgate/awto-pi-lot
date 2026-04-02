@@ -73,7 +73,7 @@ function filterModels(
         // pi requires models to have tool support
         if (
             !model.id.startsWith(autoModelPrefix) &&
-            !model.capabilities["tool_calling"]
+            !model.capabilities.tool_calling
         ) {
             continue;
         }
@@ -81,7 +81,7 @@ function filterModels(
         models.push({
             id: model.id,
             name: model.id,
-            reasoning: model.capabilities["reasoning"],
+            reasoning: model.capabilities.reasoning,
             input: ["text"] as Array<"text" | "image">,
             cost: {
                 input: model.pricing.prompt,
@@ -141,7 +141,7 @@ export async function fetchNanoGptModels(
     return models;
 }
 
-export function registerNanoGptProvider(
+export function registerNanoGptProviderInPi(
     pi: ExtensionAPI,
     models: Array<ProviderModelConfig>,
     logger: Logger

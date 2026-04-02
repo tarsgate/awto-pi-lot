@@ -1,1 +1,2 @@
-export { default } from "./src/awto-pi-lot.ts";
+export { default } from "./src/pi-plugin.ts";
+export { PpqPlugin } from "./src/opencode-plugin.ts";

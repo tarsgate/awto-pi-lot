@@ -3,29 +3,29 @@ const require = createRequire(import.meta.url);
 const packageJson = require("../package.json");
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import {
-    fetchPpqModels,
+    fetchPpqModelsForPi,
     providerName as ppqProviderName,
-    registerPpqProvider,
+    registerPpqProviderInPi,
 } from "./ppq.js";
 import {
     fetchNanoGptModels,
     providerName as nanoGptProviderName,
-    registerNanoGptProvider,
+    registerNanoGptProviderInPi,
 } from "./nano-gpt.js";
 import { Logger } from "./logging.js";
 
 async function setupPpqProvider(pi: ExtensionAPI) {
     const logger = new Logger();
-    const models = await fetchPpqModels(logger);
-    registerPpqProvider(pi, models, logger);
-    logger.flush();
+    const models = await fetchPpqModelsForPi(logger);
+    registerPpqProviderInPi(pi, models, logger);
+    await logger.flush();
 }
 
 async function setupNanoGptProvider(pi: ExtensionAPI) {
     const logger = new Logger();
     const models = await fetchNanoGptModels(logger);
-    registerNanoGptProvider(pi, models, logger);
-    logger.flush();
+    registerNanoGptProviderInPi(pi, models, logger);
+    await logger.flush();
 }
 
 export default async function (pi: ExtensionAPI) {
