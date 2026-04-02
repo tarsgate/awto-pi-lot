@@ -41,7 +41,8 @@
 	},
 	"dependencies": {
 		"@mariozechner/pi-coding-agent": "0.67.68",
-		"fp-sdk": "^0.1.1"
+		"fp-sdk": "^0.1.1",
+		"@opencode-ai/plugin": "1.4.6"
 	},
 	"devDependencies": {
 		"prettier": "2.8.3",
