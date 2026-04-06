@@ -34,7 +34,7 @@ async function fetchPPQModels(): Promise<Model<any>[]> {
 		const response = await fetch(`${ppqApiBaseUrl}/v1/models`);
 		const data = (await response.json()) as PPQApiResponse;
 
-		const defaultModelId = "autoclaw";
+		const defaultModelId = "auto";
 
 		const models: Model<any>[] = [];
 
