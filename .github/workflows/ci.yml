@@ -46,6 +46,8 @@ jobs:
     runs-on: ubuntu-24.04
     container:
       image: "ubuntu:26.04"
+    env:
+      PI_VERSION: "0.65.0"
     steps:
       - name: Install dependencies
         run: |
@@ -62,19 +64,18 @@ jobs:
         run: |
           git clone https://github.com/badlogic/pi-mono.git
           cd pi-mono
+          git checkout v${PI_VERSION}
           npm install
           npm run build
           npm run check
           ./test.sh
           ./pi-test.sh --version
-          ./pi-test.sh --version > ../last_version.txt 2>&1
           cd ..
           rm -rf pi-mono
 
       - name: Download and Install latest Pi release
         run: |
-          VERSION=$(cat last_version.txt)
-          URL="https://github.com/badlogic/pi-mono/releases/download/v${VERSION}/pi-linux-x64.tar.gz"
+          URL="https://github.com/badlogic/pi-mono/releases/download/v${PI_VERSION}/pi-linux-x64.tar.gz"
           wget "$URL"
           tar -xzf "pi-linux-x64.tar.gz"
           ./pi/pi install git:github.com/nblockchain/awto-pi-lot
