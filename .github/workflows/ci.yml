@@ -60,22 +60,29 @@ jobs:
       - name: Print versions
         run: node --version && npm --version
 
+      - name: Set IS_SCHEDULED env var
+        run: echo "IS_SCHEDULED=${{ github.event_name == 'schedule' }}" >> $GITHUB_ENV
+
       - name: Test Pi from git main branch with NodeJS version from latest Ubuntu LTS
         run: |
           git clone https://github.com/badlogic/pi-mono.git
           cd pi-mono
-          git checkout v${PI_VERSION}
+          if [ "$IS_SCHEDULED" != "true" ]; then
+            git switch --detach v${PI_VERSION}
+          fi
           npm install
           npm run build
           npm run check
           ./test.sh
           ./pi-test.sh --version
+          ./pi-test.sh --version > ../last_version.txt 2>&1
           cd ..
           rm -rf pi-mono
 
       - name: Download and Install latest Pi release
         run: |
-          URL="https://github.com/badlogic/pi-mono/releases/download/v${PI_VERSION}/pi-linux-x64.tar.gz"
+          VERSION=$(cat last_version.txt)
+          URL="https://github.com/badlogic/pi-mono/releases/download/v${VERSION}/pi-linux-x64.tar.gz"
           wget "$URL"
           tar -xzf "pi-linux-x64.tar.gz"
           ./pi/pi install git:github.com/nblockchain/awto-pi-lot
