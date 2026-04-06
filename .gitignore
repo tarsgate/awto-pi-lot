@@ -9,9 +9,6 @@ packages/*/dist/
 packages/*/dist-chrome/
 packages/*/dist-firefox/
 
-# Environment
-.env
-
 # Editor files
 .vscode/
 .zed/
