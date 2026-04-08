@@ -36,8 +36,8 @@
 		"url": "git+https://github.com/nblockchain/awto-pi-lot.git"
 	},
 	"dependencies": {
-		"@mariozechner/pi-ai": "*",
-		"@mariozechner/pi-coding-agent": "*",
+		"@mariozechner/pi-ai": "0.65.0",
+		"@mariozechner/pi-coding-agent": "0.65.0",
 		"fp-sdk": "^0.1.1"
 	},
 	"devDependencies": {

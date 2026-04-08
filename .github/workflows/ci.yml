@@ -46,9 +46,11 @@ jobs:
     runs-on: ubuntu-24.04
     container:
       image: "ubuntu:26.04"
-    env:
-      PI_VERSION: "0.65.0"
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Load variables from .env file
+        run: cat .env >> $GITHUB_ENV
       - name: Install dependencies
         run: |
           apt update --yes
@@ -59,6 +61,21 @@ jobs:
 
       - name: Print versions
         run: node --version && npm --version
+
+      - name: Check package versions
+        run: |
+          # Get versions from package.json
+          PI_AI_VERSION=$(node -p "require('./package.json').dependencies['@mariozechner/pi-ai']")
+          PI_CODING_AGENT_VERSION=$(node -p "require('./package.json').dependencies['@mariozechner/pi-coding-agent']")
+
+          if [ "$PI_VERSION" != "$PI_AI_VERSION" ]; then
+            echo "ERROR: @mariozechner/pi-ai version ($PI_AI_VERSION) does not match PI version ($PI_VERSION)"
+            exit 1
+          fi
+          if [ "$PI_VERSION" != "$PI_CODING_AGENT_VERSION" ]; then
+            echo "ERROR: @mariozechner/pi-coding-agent version ($PI_CODING_AGENT_VERSION) does not match PI version ($PI_VERSION)"
+            exit 1
+          fi
 
       - name: Set IS_SCHEDULED env var
         run: echo "IS_SCHEDULED=${{ github.event_name == 'schedule' }}" >> $GITHUB_ENV

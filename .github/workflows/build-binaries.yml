@@ -12,6 +12,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Load variables from .env file
+        run: cat .env >> $GITHUB_ENV
+
       - name: Verify version matches tag
         run: |
           # Extract tag version (remove 'v' prefix if present)
@@ -27,6 +30,14 @@ jobs:
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
             echo "ERROR: Git tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
             exit 1
+          fi
+
+          PKG_MINOR_PATCH="${PKG_VERSION#*.}"
+          PI_MINOR_PATCH="${PI_VERSION#*.}"
+
+          if [ "$PKG_MINOR_PATCH" != "$PI_MINOR_PATCH" ]; then
+              echo "Minor and patch components of package.json version ($PKG_VERSION) are different from corresponding components of pi version ($PI_VERSION)"
+              exit 1
           fi
 
           echo "✓ Versions match!"
