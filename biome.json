@@ -10,7 +10,7 @@
 				"useNodejsImportProtocol": "off"
 			},
 			"suspicious": {
-				"noExplicitAny": "off",
+				"noExplicitAny": "warn",
 				"noControlCharactersInRegex": "off",
 				"noEmptyInterface": "off"
 			}
