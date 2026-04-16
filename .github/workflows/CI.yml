@@ -107,4 +107,4 @@ jobs:
 
       - name: Test extension loading
         run: |
-          { set +o pipefail; ./pi/pi --print "dummy prompt" || true; } | grep -q "API key"
+          ./pi/pi --print "dummy prompt" > output.txt 2>&1 || true && grep -q "API key" output.txt
