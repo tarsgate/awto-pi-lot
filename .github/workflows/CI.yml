@@ -105,3 +105,6 @@ jobs:
           ./pi/pi install git:github.com/${GITHUB_REPOSITORY}@${{ (github.event_name == 'pull_request' && github.event.pull_request.base.sha) || github.sha }}
           ./pi/pi --version
 
+      - name: Test extension loading
+        run: |
+          (./pi/pi --print "dummy prompt" 2>&1 | tee output.txt) && grep -q Fetched output.txt
