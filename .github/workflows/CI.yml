@@ -57,7 +57,7 @@ jobs:
 
           # NOTE: do not change the below with an `actions/setup-node` step! or it
           # would make this CI job entirely pointless
-          apt install --yes npm git wget
+          apt install --yes --no-install-recommends npm git wget
 
       - name: Print versions
         run: node --version && npm --version
