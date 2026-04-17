@@ -80,7 +80,7 @@ jobs:
       - name: Set IS_SCHEDULED env var
         run: echo "IS_SCHEDULED=${{ github.event_name == 'schedule' }}" >> $GITHUB_ENV
 
-      - name: Test Pi from git main branch with NodeJS version from latest Ubuntu LTS
+      - name: Test Pi from git with NodeJS version from latest Ubuntu LTS
         run: |
           git clone https://github.com/badlogic/pi-mono.git
           cd pi-mono
