@@ -54,7 +54,7 @@ async function fetchPPQModels(): Promise<Model<any>[]> {
 					(modality) => modality === "text" || modality === "image",
 				);
 			}
-			modelConfigs.push({
+			models.push({
 				id: model.id,
 				name: model.name,
 				api: "openai-completions",
