@@ -96,7 +96,7 @@ jobs:
           cd ..
           rm -rf pi-mono
 
-      - name: Download and Install latest Pi release
+      - name: Download and Install Pi release
         run: |
           VERSION=$(cat last_version.txt)
           URL="https://github.com/badlogic/pi-mono/releases/download/v${VERSION}/pi-linux-x64.tar.gz"
