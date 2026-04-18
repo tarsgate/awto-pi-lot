@@ -28,6 +28,16 @@ interface PPQApiResponse {
 
 const ppqApiBaseUrl = "https://api.ppq.ai";
 
+function isMetaModel(modelId: string): bool {
+	const lowered = modelId.toLowerCase();
+
+	// e.g. AutoClaw and Auto
+	return lowered.startsWith("auto") ||
+
+		// there's a bunch of free models in PPQ.ai website, maybe they'll get exposed by the API at some point?
+		startsWith("free");
+}
+
 async function fetchPPQModels(): Promise<Model<any>[]> {
 	try {
 		console.log("Fetching models from PPQ.ai...");
@@ -43,8 +53,8 @@ async function fetchPPQModels(): Promise<Model<any>[]> {
 			const supportedParameters = maybeSupportedParameters instanceof Some ? maybeSupportedParameters.value : [];
 			const architecture = OptionHelpers.OfObj(model.architecture);
 
-			// pi requires models to have tool support (but include "autoclaw" model in any case)
-			if (model.id !== defaultModelId && !supportedParameters.includes("tools")) {
+			// pi requires models to have tool support
+			if ((!isMetaModel(model.id)) && !supportedParameters.includes("tools")) {
 				continue;
 			}
 
