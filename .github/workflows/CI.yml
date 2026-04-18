@@ -107,4 +107,11 @@ jobs:
 
       - name: Test extension loading
         run: |
-          (./pi/pi --print "dummy prompt" 2>&1 | tee output.txt) && grep -q awto-pi-lot output.txt
+          # tee makes exitCode not propagate (which is what we want because even if
+          # extension loads successfully, it will abort due to 'No API Key found')
+          (./pi/pi --print "dummy prompt" 2>&1 | tee output.txt)
+
+          # therefore, we check the output for success or not
+          grep --quiet awto-pi-lot output.txt
+          # --null-data is to scan whole file, not line by line
+          grep --invert-match --quiet --null-data --ignore-case error output.txt
