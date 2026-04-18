@@ -13,25 +13,25 @@ To see the potential benefits of using PPQ/AutoClaw, see https://github.com/badl
 Install it with:
 
 ```
-./pi/pi install npm:awto-pi-lot
+pi install npm:awto-pi-lot
 ```
 
 Or from git directly:
 
 ```
-./pi/pi install git:github.com/nblockchain/awto-pi-lot
+pi install git:github.com/nblockchain/awto-pi-lot
 ```
 
 Or if you want to use it without installing, use the `-e` flag (alias for `--extension`):
 
 ```
-./pi/pi -e npm:awto-pi-lot
+pi -e npm:awto-pi-lot
 ```
 
 Or from git directly:
 
 ```
-./pi/pi --extension git:github.com/nblockchain/awto-pi-lot
+pi --extension git:github.com/nblockchain/awto-pi-lot
 ```
 
 
