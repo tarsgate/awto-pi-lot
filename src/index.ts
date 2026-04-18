@@ -43,6 +43,7 @@ async function fetchPPQModels(): Promise<Model<any>[]> {
 		console.log("Fetching models from PPQ.ai...");
 		const response = await fetch(`${ppqApiBaseUrl}/v1/models`);
 		const data = (await response.json()) as PPQApiResponse;
+		console.log(`Fetched ${data.data.length} models from PPQ.ai`);
 
 		const defaultModelId = "autoclaw";
 
@@ -84,24 +85,29 @@ async function fetchPPQModels(): Promise<Model<any>[]> {
 
 		models.sort((a, b) => (a.id === defaultModelId ? -1 : b.id === defaultModelId ? 1 : 0));
 
-		console.log(`Fetched ${models.length} models from PPQ.ai`);
+		console.log(`Found ${models.length} compatible models from PPQ.ai`);
 		return models;
 	} catch (error) {
-		console.error("Failed to fetch PPQ.ai models:\n", error);
+		console.error("Failed to fetch/filter PPQ.ai models:\n", error);
 		return [];
 	}
 }
 
 export default async function (pi: ExtensionAPI) {
 	const models = await fetchPPQModels();
+	if (models.length > 0) {
+		pi.registerProvider("ppq", {
+			baseUrl: ppqApiBaseUrl,
+			api: "openai-completions",
+			apiKey: "PPQ_API_KEY",
+			models: models,
+		});
+		console.log(`awto-pi-lot ready: Successfully loaded ${models.length} models from PPQ.ai`);
+	}
+	else
+	{
+		console.error(`ERROR: no models from PPQ.ai could be fetched/configured`);
+	}
 
-	pi.registerProvider("ppq", {
-		baseUrl: ppqApiBaseUrl,
-		api: "openai-completions",
-		apiKey: "PPQ_API_KEY",
-		models: models,
-	});
-
-	console.log(`awto-pi-lot ready: Successfully loaded ${models.length} models from PPQ.ai`);
 	return;
 }
