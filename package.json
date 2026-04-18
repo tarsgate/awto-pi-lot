@@ -1,6 +1,6 @@
 {
 	"name": "awto-pi-lot",
-	"version": "2.67.1",
+	"version": "2.67.68",
 	"type": "module",
 	"description": "pi-coding-agent extension that adds PPQ.ai provider and default AutoClaw model",
 	"pi": {
@@ -36,8 +36,8 @@
 		"url": "git+https://github.com/nblockchain/awto-pi-lot.git"
 	},
 	"dependencies": {
-		"@mariozechner/pi-ai": "0.67.1",
-		"@mariozechner/pi-coding-agent": "0.67.1",
+		"@mariozechner/pi-ai": "0.67.68",
+		"@mariozechner/pi-coding-agent": "0.67.68",
 		"fp-sdk": "^0.1.1"
 	},
 	"devDependencies": {
