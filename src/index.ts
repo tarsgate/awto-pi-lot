@@ -35,7 +35,7 @@ function isMetaModel(modelId: string): bool {
 	return lowered.startsWith("auto") ||
 
 		// there's a bunch of free models in PPQ.ai website, maybe they'll get exposed by the API at some point?
-		startsWith("free");
+		lowered.startsWith("free");
 }
 
 async function fetchPPQModels(): Promise<Model<any>[]> {
