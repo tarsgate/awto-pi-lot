@@ -28,7 +28,7 @@ interface PPQApiResponse {
 
 const ppqApiBaseUrl = "https://api.ppq.ai";
 
-function isMetaModel(modelId: string): bool {
+function isMetaModel(modelId: string): boolean {
 	const lowered = modelId.toLowerCase();
 
 	// e.g. AutoClaw and Auto
@@ -80,7 +80,7 @@ async function fetchPPQModels(): Promise<Model<any>[]> {
 					cacheWrite: 0,
 				},
 				contextWindow: model.context_length,
-			});
+			} as Model<any>);
 		}
 
 		models.sort((a, b) => (a.id === defaultModelId ? -1 : b.id === defaultModelId ? 1 : 0));
