@@ -37,18 +37,24 @@ function isMetaModel(modelId: string): boolean {
 		lowered.startsWith("free");
 }
 
-async function fetchPPQModels(): Promise<ProviderModelConfig[]> {
+async function fetchPpqModels(): Promise<PPQModel[]> {
 	try {
 		console.log("Fetching models from PPQ.ai...");
 		const response = await fetch(`${ppqApiBaseUrl}/v1/models`);
 		const data = (await response.json()) as PPQApiResponse;
 		console.log(`Fetched ${data.data.length} models from PPQ.ai`);
+		return data.data;
+	} catch (error) {
+		console.error("Failed to fetch PPQ.ai models:\n", error);
+		return [];
+	}
+}
 
-		const defaultModelId = "autoclaw";
-
+async function filterPpqModels(apiModels: PPQModel[]): Promise<ProviderModelConfig[]> {
+	try {
 		const models: ProviderModelConfig[] = [];
 
-		for (const model of data.data) {
+		for (const model of apiModels) {
 			const maybeSupportedParameters = OptionHelpers.OfObj(model.supported_parameters);
 			const supportedParameters = maybeSupportedParameters instanceof Some ? maybeSupportedParameters.value : [];
 			const architecture = OptionHelpers.OfObj(model.architecture);
@@ -80,18 +86,20 @@ async function fetchPPQModels(): Promise<ProviderModelConfig[]> {
 			} as ProviderModelConfig);
 		}
 
+		const defaultModelId = "autoclaw";
 		models.sort((a, b) => (a.id === defaultModelId ? -1 : b.id === defaultModelId ? 1 : 0));
 
 		console.log(`Found ${models.length} compatible models from PPQ.ai`);
 		return models;
 	} catch (error) {
-		console.error("Failed to fetch/filter PPQ.ai models:\n", error);
+		console.error("Failed to filter PPQ.ai models:\n", error);
 		return [];
 	}
 }
 
 export default async function (pi: ExtensionAPI) {
-	const models = await fetchPPQModels();
+	const apiModels = await fetchPpqModels();
+	const models = await filterPpqModels(apiModels);
 	if (models.length > 0) {
 		pi.registerProvider("ppq", {
 			baseUrl: ppqApiBaseUrl,
