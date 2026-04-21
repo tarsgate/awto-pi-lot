@@ -37,7 +37,9 @@ jobs:
         run: npm run build
 
       - name: Check
-        run: npm run check
+        run: |
+          npm run check
+          git diff --exit-code || (echo "Formatting did not match (see above diff), please run 'npm run check'" >&2 && exit 1)
 
   nodeJsBaselineAptCompatibilityCheckOfUpstreamPiRepo:
     name: NodeJS installed from stock Ubuntu-LTS packages (not external sources)
