@@ -77,8 +77,11 @@ jobs:
             exit 1
           fi
 
-      - name: Set IS_SCHEDULED env var
-        run: echo "IS_SCHEDULED=${{ github.event_name == 'schedule' }}" >> $GITHUB_ENV
+      - name: Set helper env vars
+        run: |
+          echo "IS_SCHEDULED=${{ github.event_name == 'schedule' }}" >> $GITHUB_ENV
+          echo "GH_FULL_REPO=${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name) || github.repository }}" >> $GITHUB_ENV
+          echo "GH_SHA=${{ (github.event_name == 'pull_request' && github.event.pull_request.head.sha) || github.sha }}" >> $GITHUB_ENV
 
       - name: Test Pi from git with NodeJS version from latest Ubuntu LTS
         run: |
@@ -87,6 +90,13 @@ jobs:
           if [ "$IS_SCHEDULED" != "true" ]; then
             git switch --detach v${PI_VERSION}
           fi
+          git clone "https://github.com/$GH_FULL_REPO.git"
+          cd ${GITHUB_REPOSITORY#*/}
+          git checkout "$GH_SHA"
+          cd ..
+          apt install --yes patch
+          patch -p1 -i ${GITHUB_REPOSITORY#*/}/patches/cbe0e8304fee4fe826d241b73c083b27735272bf.patch
+          rm -rf ${GITHUB_REPOSITORY#*/}
           npm install
           npm run build
           npm run check
@@ -102,7 +112,7 @@ jobs:
           URL="https://github.com/badlogic/pi-mono/releases/download/v${VERSION}/pi-linux-x64.tar.gz"
           wget "$URL"
           tar -xzf "pi-linux-x64.tar.gz"
-          ./pi/pi install git:github.com/${GITHUB_REPOSITORY}@${{ (github.event_name == 'pull_request' && github.event.pull_request.head.sha) || github.sha }}
+          ./pi/pi install "git:github.com/$GH_FULL_REPO@$GH_SHA"
           ./pi/pi --version
 
       - name: Test extension loading
