@@ -82,9 +82,9 @@ jobs:
         run: |
           git clone https://github.com/badlogic/pi-mono.git
           cd pi-mono
-          if [ "$IS_SCHEDULED" != "true" ]; then
-            git switch --detach v${PI_VERSION}
-          fi
+          #if [ "$IS_SCHEDULED" != "true" ]; then
+          #  git switch --detach v${PI_VERSION}
+          #fi
           git clone "https://github.com/$GH_FULL_REPO.git"
           cd ${GITHUB_REPOSITORY#*/}
           git checkout "$GH_SHA"
