@@ -85,6 +85,9 @@ jobs:
           #if [ "$IS_SCHEDULED" != "true" ]; then
           #  git switch --detach v${PI_VERSION}
           #fi
+          echo "Successfully cloned Pi at:"
+          git log -1 --format="%H"
+          echo "\n"
           git clone "https://github.com/$GH_FULL_REPO.git"
           cd ${GITHUB_REPOSITORY#*/}
           git checkout "$GH_SHA"
