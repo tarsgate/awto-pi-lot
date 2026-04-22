@@ -83,7 +83,7 @@ jobs:
           git clone https://github.com/badlogic/pi-mono.git
           cd pi-mono
           if [ "$IS_SCHEDULED" != "true" ]; then
-            git switch --detach v0.68.1
+            git switch --detach v0.67.68
           fi
           echo "Successfully cloned Pi at:"
           git log -1 --format="%H"
@@ -94,7 +94,7 @@ jobs:
           cd ..
           apt install --yes patch
           # ends with ||true because it's "best effort"
-          patch -p1 -i ${GITHUB_REPOSITORY#*/}/patches/cbe0e8304fee4fe826d241b73c083b27735272bf.patch || true
+          #patch -p1 -i ${GITHUB_REPOSITORY#*/}/patches/cbe0e8304fee4fe826d241b73c083b27735272bf.patch || true
           rm -rf ${GITHUB_REPOSITORY#*/}
           npm install
           npm run build
