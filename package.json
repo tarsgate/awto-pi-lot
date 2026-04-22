@@ -11,7 +11,8 @@
 	"scripts": {
 		"clean": "shx rm -rf dist",
 		"build": "npx tsc && shx cp README.md dist/",
-		"check": "npm install && npm run build && biome check --write --error-on-warnings ."
+		"check": "npm install && npm run build && biome lint --write --error-on-warnings . && npm run format",
+		"format": "npx --no-install prettier --quote-props=consistent --write ./src/**/*.ts"
 	},
 	"keywords": [
 		"pi",
@@ -39,6 +40,7 @@
 		"fp-sdk": "^0.1.1"
 	},
 	"devDependencies": {
+		"prettier": "2.8.3",
 		"@biomejs/biome": "2.3.5",
 		"@types/node": "^22.10.5",
 		"husky": "^9.1.7",
