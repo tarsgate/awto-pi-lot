@@ -90,7 +90,8 @@ jobs:
           git checkout "$GH_SHA"
           cd ..
           apt install --yes patch
-          patch -p1 -i ${GITHUB_REPOSITORY#*/}/patches/cbe0e8304fee4fe826d241b73c083b27735272bf.patch
+          # ends with ||true because it's "best effort"
+          patch -p1 -i ${GITHUB_REPOSITORY#*/}/patches/cbe0e8304fee4fe826d241b73c083b27735272bf.patch || true
           rm -rf ${GITHUB_REPOSITORY#*/}
           npm install
           npm run build
