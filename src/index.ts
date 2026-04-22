@@ -231,7 +231,13 @@ export const PpqPlugin: Plugin = async ({ client }) => {
 };
 
 // pi plugin
-export default async function (pi: ExtensionAPI) {
+export default async function (pi: ExtensionAPI): Promise<Plugin | undefined> {
+    // avoid fetching PPQ models twice if loaded from OpenCode
+    if ("client" in pi) {
+        // just `return;` would crash OpenCode
+        return PpqPlugin;
+    }
+
     const apiModels = await fetchPpqModels();
     const models = await filterPpqModelsForPi(apiModels);
     if (models.length > 0) {
