@@ -82,9 +82,9 @@ jobs:
         run: |
           git clone https://github.com/badlogic/pi-mono.git
           cd pi-mono
-          #if [ "$IS_SCHEDULED" != "true" ]; then
-          #  git switch --detach v${PI_VERSION}
-          #fi
+          if [ "$IS_SCHEDULED" != "true" ]; then
+            git switch --detach v0.68.1
+          fi
           echo "Successfully cloned Pi at:"
           git log -1 --format="%H"
           echo "\n"
