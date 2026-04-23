@@ -12,7 +12,7 @@
 		"clean": "shx rm -rf dist",
 		"build": "npx tsc && shx cp README.md dist/",
 		"check": "npm install && npm run build && biome lint --write --error-on-warnings . && npm run format",
-		"format": "npx --no-install prettier --quote-props=consistent --write ./src/**/*.ts"
+		"format": "npm install && npx --no-install prettier --quote-props=consistent --write ./src/**/*.ts"
 	},
 	"keywords": [
 		"pi",
