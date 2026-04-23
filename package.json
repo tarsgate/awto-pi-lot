@@ -31,9 +31,13 @@
 		"lightning"
 	],
 	"license": "MIT",
+	"homepage": "https://github.com/tarsgate/awto-pi-lot#readme",
+	"bugs": {
+		"url": "https://github.com/tarsgate/awto-pi-lot/issues"
+	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nblockchain/awto-pi-lot.git"
+		"url": "git+https://github.com/tarsgate/awto-pi-lot.git"
 	},
 	"dependencies": {
 		"@mariozechner/pi-coding-agent": "0.67.68",
