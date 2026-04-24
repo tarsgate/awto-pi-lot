@@ -107,9 +107,20 @@ async function filterPpqModels(
         }
 
         const defaultModelId = "autoclaw";
-        models.sort((a, b) =>
-            a.id === defaultModelId ? -1 : b.id === defaultModelId ? 1 : 0
-        );
+        const secondDefaultModelId = "auto";
+        models.sort((a, b) => {
+            const position = (id: string) => {
+                switch (id) {
+                    case defaultModelId:
+                        return 0;
+                    case secondDefaultModelId:
+                        return 1;
+                    default:
+                        return 2;
+                }
+            };
+            return position(a.id) - position(b.id);
+        });
 
         console.log(`Found ${models.length} compatible models from PPQ.ai`);
         return models;
