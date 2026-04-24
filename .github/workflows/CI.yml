@@ -87,13 +87,9 @@ jobs:
           if [ "$IS_SCHEDULED" != "true" ]; then
             git switch --detach v${PI_VERSION}
           fi
-          git clone "https://github.com/$GH_FULL_REPO.git"
-          cd ${GITHUB_REPOSITORY#*/}
-          git checkout "$GH_SHA"
-          cd ..
+          wget https://github.com/badlogic/pi-mono/commit/ab744e216dbd350f39f730e29962e5ed3db7217d.patch
           apt install --yes patch
-          patch -p1 -i ${GITHUB_REPOSITORY#*/}/patches/cbe0e8304fee4fe826d241b73c083b27735272bf.patch || echo "Skipped patch, doesn't apply"
-          rm -rf ${GITHUB_REPOSITORY#*/}
+          patch -p1 -i ab744e216dbd350f39f730e29962e5ed3db7217d.patch
           npm install
           npm run build
           npm run check
