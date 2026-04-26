@@ -1,0 +1,26 @@
+From aba26e65c7db6e044e2be5d07c710f81692c97e3 Mon Sep 17 00:00:00 2001
+From: webwarrior-ws <reg@webwarrior.ws>
+Date: Sat, 14 Mar 2026 22:09:48 +0100
+Subject: [PATCH 09/15] feat(coding-agent): default PPQ model to be autoclaw
+
+See https://ppq.ai/blog/using-autoclaw-with-payperq
+---
+ packages/coding-agent/src/core/model-resolver.ts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/coding-agent/src/core/model-resolver.ts b/packages/coding-agent/src/core/model-resolver.ts
+index 55119dd7..283fe03b 100644
+--- a/packages/coding-agent/src/core/model-resolver.ts
++++ b/packages/coding-agent/src/core/model-resolver.ts
+@@ -35,7 +35,7 @@ export const defaultModelPerProvider: Record<KnownProvider, string> = {
+ 	opencode: "claude-opus-4-6",
+ 	"opencode-go": "kimi-k2.5",
+ 	"kimi-coding": "kimi-k2-thinking",
+-	ppq: "claude-opus-4.6",
++	ppq: "autoclaw",
+ };
+ 
+ export interface ScopedModel {
+-- 
+2.50.1 (Apple Git-155)
+

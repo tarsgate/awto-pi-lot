@@ -1,0 +1,51 @@
+From ab6eee757d6dcb8073dcabdf98bea752756c2c34 Mon Sep 17 00:00:00 2001
+From: "Andres G. Aragoneses" <knocte@gmail.com>
+Date: Sun, 15 Mar 2026 09:21:41 +0000
+Subject: [PATCH 05/15] fix(pi-test.sh): fail fast for cwd!=SCRIPT_DIR
+
+Otherwise it would fail with an error like this:
+
+```
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/root/auto-pi-lotWIP/node_modules/@mariozechner/pi-ai/dist/index.js' imported from /root/auto-pi-lotWIP/packages/coding-agent/src/cli.ts
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at nextResolve (node:internal/modules/esm/hooks:785:28)
+    at resolveBase (file:///root/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1773566639549:2:3744)
+    at resolveDirectory (file:///root/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1773566639549:2:4243)
+    at resolveTsPaths (file:///root/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1773566639549:2:4984)
+    at resolve (file:///root/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1773566639549:2:5361)
+    at nextResolve (node:internal/modules/esm/hooks:785:28)
+    at AsyncLoaderHooksOnLoaderHookWorker.resolve (node:internal/modules/esm/hooks:269:30) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///root/auto-pi-lotWIP/node_modules/@mariozechner/pi-ai/dist/index.js'
+}
+
+Node.js v24.14.0
+```
+---
+ pi-test.sh | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/pi-test.sh b/pi-test.sh
+index 5bf5f3a6..05ccc576 100755
+--- a/pi-test.sh
++++ b/pi-test.sh
+@@ -8,6 +8,11 @@ if [[ ! -d "$SCRIPT_DIR/node_modules" ]]; then
+   exit 1
+ fi
+ 
++if [[ "$(pwd)" != "$SCRIPT_DIR" ]]; then
++  echo "Error: must be run from $SCRIPT_DIR (current dir is $(pwd))." >&2
++  exit 1
++fi
++
+ # Check for --no-env flag
+ NO_ENV=false
+ ARGS=()
+-- 
+2.50.1 (Apple Git-155)
+

@@ -1,0 +1,180 @@
+From a13e0003b4b0d1f87640adf6dd4c496f1e9ddaef Mon Sep 17 00:00:00 2001
+From: "Andres G. Aragoneses" <knocte@gmail.com>
+Date: Sat, 14 Mar 2026 20:29:06 +0100
+Subject: [PATCH 07/15] fix(ai,coding-agent): integrate models.json
+
+---
+ models.json                                   | 23 ------------
+ packages/ai/scripts/generate-models.ts        | 30 +++++++++++++++-
+ packages/ai/src/env-api-keys.ts               |  1 +
+ packages/ai/src/models.generated.ts           | 36 +++++++++++++++++++
+ packages/ai/src/types.ts                      |  3 +-
+ .../coding-agent/src/core/model-resolver.ts   |  1 +
+ 6 files changed, 69 insertions(+), 25 deletions(-)
+ delete mode 100644 models.json
+
+diff --git a/models.json b/models.json
+deleted file mode 100644
+index 6c93e669..00000000
+--- a/models.json
++++ /dev/null
+@@ -1,23 +0,0 @@
+-{
+-  "providers": {
+-    "PPQ": {
+-      "baseUrl": "https://api.ppq.ai",
+-      "api": "openai-completions",
+-      "apiKey": "PPQ_API_KEY",
+-      "models": [
+-        {
+-          "id": "claude-opus-4.6",
+-          "name": "Claude Opus 4.6",
+-          "contextWindow": 1000000,
+-          "cost": { "input": 5.25, "output": 26.25, "cacheRead": 0, "cacheWrite": 0 }
+-        },
+-        {
+-          "id": "gpt-5.2-codex",
+-          "name": "GPT-5.2-Codex",
+-          "contextWindow": 400000,
+-          "cost": { "input": 1.84, "output": 14.70, "cacheRead": 0, "cacheWrite": 0 }
+-        }
+-      ]
+-    }
+-  }
+-}
+diff --git a/packages/ai/scripts/generate-models.ts b/packages/ai/scripts/generate-models.ts
+index 8de401b1..8f5af680 100644
+--- a/packages/ai/scripts/generate-models.ts
++++ b/packages/ai/scripts/generate-models.ts
+@@ -637,6 +637,34 @@ async function loadModelsDevData(): Promise<Model<any>[]> {
+ 	}
+ }
+ 
++const PPQ_BASE_URL = "https://api.ppq.ai";
++const ppqModels: Model<"openai-completions">[] = [
++	{
++		id: "claude-opus-4.6",
++		name: "Claude Opus 4.6",
++		api: "openai-completions",
++		provider: "ppq",
++		baseUrl: PPQ_BASE_URL,
++		reasoning: false,
++		input: ["text"],
++		cost: { input: 5.25, output: 26.25, cacheRead: 0, cacheWrite: 0 },
++		contextWindow: 1000000,
++		maxTokens: 4096,
++	},
++	{
++		id: "gpt-5.2-codex",
++		name: "GPT-5.2-Codex",
++		api: "openai-completions",
++		provider: "ppq",
++		baseUrl: PPQ_BASE_URL,
++		reasoning: false,
++		input: ["text"],
++		cost: { input: 1.84, output: 14.70, cacheRead: 0, cacheWrite: 0 },
++		contextWindow: 400000,
++		maxTokens: 4096,
++	},
++];
++
+ async function generateModels() {
+ 	// Fetch models from both sources
+ 	// models.dev: Anthropic, Google, OpenAI, Groq, Cerebras
+@@ -647,7 +675,7 @@ async function generateModels() {
+ 	const aiGatewayModels = await fetchAiGatewayModels();
+ 
+ 	// Combine models (models.dev has priority)
+-	const allModels = [...modelsDevModels, ...openRouterModels, ...aiGatewayModels].filter(
++	const allModels = [...modelsDevModels, ...openRouterModels, ...aiGatewayModels, ...ppqModels].filter(
+ 		(model) =>
+ 			!((model.provider === "opencode" || model.provider === "opencode-go") && model.id === "gpt-5.3-codex-spark"),
+ 	);
+diff --git a/packages/ai/src/env-api-keys.ts b/packages/ai/src/env-api-keys.ts
+index 95e91417..00e94205 100644
+--- a/packages/ai/src/env-api-keys.ts
++++ b/packages/ai/src/env-api-keys.ts
+@@ -126,6 +126,7 @@ export function getEnvApiKey(provider: any): string | undefined {
+ 		opencode: "OPENCODE_API_KEY",
+ 		"opencode-go": "OPENCODE_API_KEY",
+ 		"kimi-coding": "KIMI_API_KEY",
++		ppq: "PPQ_API_KEY",
+ 	};
+ 
+ 	const envVar = envMap[provider];
+diff --git a/packages/ai/src/models.generated.ts b/packages/ai/src/models.generated.ts
+index 585502d1..52febe23 100644
+--- a/packages/ai/src/models.generated.ts
++++ b/packages/ai/src/models.generated.ts
+@@ -10598,6 +10598,42 @@ export const MODELS = {
+ 			maxTokens: 131072,
+ 		} satisfies Model<"openai-completions">,
+ 	},
++	"ppq": {
++		"claude-opus-4.6": {
++			id: "claude-opus-4.6",
++			name: "Claude Opus 4.6",
++			api: "openai-completions",
++			provider: "ppq",
++			baseUrl: "https://api.ppq.ai",
++			reasoning: false,
++			input: ["text"],
++			cost: {
++				input: 5.25,
++				output: 26.25,
++				cacheRead: 0,
++				cacheWrite: 0,
++			},
++			contextWindow: 1000000,
++			maxTokens: 4096,
++		} satisfies Model<"openai-completions">,
++		"gpt-5.2-codex": {
++			id: "gpt-5.2-codex",
++			name: "GPT-5.2-Codex",
++			api: "openai-completions",
++			provider: "ppq",
++			baseUrl: "https://api.ppq.ai",
++			reasoning: false,
++			input: ["text"],
++			cost: {
++				input: 1.84,
++				output: 14.7,
++				cacheRead: 0,
++				cacheWrite: 0,
++			},
++			contextWindow: 400000,
++			maxTokens: 4096,
++		} satisfies Model<"openai-completions">,
++	},
+ 	"vercel-ai-gateway": {
+ 		"alibaba/qwen-3-14b": {
+ 			id: "alibaba/qwen-3-14b",
+diff --git a/packages/ai/src/types.ts b/packages/ai/src/types.ts
+index 86318571..e9901817 100644
+--- a/packages/ai/src/types.ts
++++ b/packages/ai/src/types.ts
+@@ -39,7 +39,8 @@ export type KnownProvider =
+ 	| "huggingface"
+ 	| "opencode"
+ 	| "opencode-go"
+-	| "kimi-coding";
++	| "kimi-coding"
++	| "ppq";
+ export type Provider = KnownProvider | string;
+ 
+ export type ThinkingLevel = "minimal" | "low" | "medium" | "high" | "xhigh";
+diff --git a/packages/coding-agent/src/core/model-resolver.ts b/packages/coding-agent/src/core/model-resolver.ts
+index 34d16045..55119dd7 100644
+--- a/packages/coding-agent/src/core/model-resolver.ts
++++ b/packages/coding-agent/src/core/model-resolver.ts
+@@ -35,6 +35,7 @@ export const defaultModelPerProvider: Record<KnownProvider, string> = {
+ 	opencode: "claude-opus-4-6",
+ 	"opencode-go": "kimi-k2.5",
+ 	"kimi-coding": "kimi-k2-thinking",
++	ppq: "claude-opus-4.6",
+ };
+ 
+ export interface ScopedModel {
+-- 
+2.50.1 (Apple Git-155)
+
