@@ -1,0 +1,26 @@
+From 80bd1a5edd35b42d7dece8d141f9f70044a6f952 Mon Sep 17 00:00:00 2001
+From: "Andres G. Aragoneses" <knocte@gmail.com>
+Date: Thu, 12 Mar 2026 20:27:11 +0100
+Subject: [PATCH 01/15] ci: remove branch restrictions
+
+---
+ .github/workflows/ci.yml | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index ef5b18da..f628700f 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -2,9 +2,7 @@ name: CI
+ 
+ on:
+   push:
+-    branches: [main]
+   pull_request:
+-    branches: [main]
+ 
+ concurrency:
+   group: ci-${{ github.ref }}
+-- 
+2.50.1 (Apple Git-155)
+

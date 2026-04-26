@@ -1,0 +1,42 @@
+From 4d15441dfa15b4041c1b6c6c2ce40665675253aa Mon Sep 17 00:00:00 2001
+From: "Andres G. Aragoneses" <knocte@gmail.com>
+Date: Fri, 20 Mar 2026 19:11:16 +0000
+Subject: [PATCH 15/15] ci: version sanity check
+
+---
+ .github/workflows/build-binaries.yml | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/.github/workflows/build-binaries.yml b/.github/workflows/build-binaries.yml
+index 71622de7..c36a758a 100644
+--- a/.github/workflows/build-binaries.yml
++++ b/.github/workflows/build-binaries.yml
+@@ -12,6 +12,25 @@ jobs:
+       - name: Checkout
+         uses: actions/checkout@v4
+ 
++      - name: Verify version matches tag
++        run: |
++          # Extract tag version (remove 'v' prefix if present)
++          TAG_VERSION="${GITHUB_REF_NAME#v}"
++
++          # Get version from package.json
++          PKG_VERSION=$(node -p "require('./package.json').version")
++
++          echo "Git tag version: $TAG_VERSION"
++          echo "Package.json version: $PKG_VERSION"
++
++          # Compare versions
++          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
++            echo "ERROR: Git tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
++            exit 1
++          fi
++
++          echo "✓ Versions match!"
++
+       - name: Setup Node.js
+         uses: actions/setup-node@v4
+         with:
+-- 
+2.50.1 (Apple Git-155)
+

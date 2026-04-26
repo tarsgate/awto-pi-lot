@@ -1,0 +1,25 @@
+From 1a1204cb1c877bd1ed709fbce4a9dae0a960b4d2 Mon Sep 17 00:00:00 2001
+From: "Andres G. Aragoneses" <knocte@gmail.com>
+Date: Sun, 15 Mar 2026 11:14:34 +0000
+Subject: [PATCH 02/15] ci: change concurrency to allow push1by1
+
+---
+ .github/workflows/ci.yml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index f628700f..b918b5ff 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -5,7 +5,7 @@ on:
+   pull_request:
+ 
+ concurrency:
+-  group: ci-${{ github.ref }}
++  group: ci-${{ github.sha }}
+   cancel-in-progress: true
+ 
+ jobs:
+-- 
+2.50.1 (Apple Git-155)
+

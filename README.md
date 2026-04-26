@@ -49,6 +49,11 @@ Using env var PPQ_API_KEY is also supported but not recommended, because sandbox
 
 ---
 
+## History
+
+This repo used to be a fork of 'pi-mono' before becoming just a custom-provider extension. For retreiving the history of that old effort, check out tag `v0.60.0` (commit b0026866bf3459e06afb244f8b4334bc3782f7b0) and apply the patches in folder `patches/old/` on top of it.
+
+
 ## License
 
 MIT

@@ -1,0 +1,50 @@
+From f013b5603dcad769d6365bb688d1abf80efc44ae Mon Sep 17 00:00:00 2001
+From: "Andres G. Aragoneses" <knocte@gmail.com>
+Date: Sat, 14 Mar 2026 17:44:10 +0100
+Subject: [PATCH 04/15] fix(pi-test.sh): add sanity check before run
+
+Otherwise, if no npm install was run before this, it would give
+cryptic errors such as:
+
+```
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@sinclair/typebox' imported from /root/auto-pi-lot/packages/ai/src/index.ts
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+    at packageResolve (node:internal/modules/esm/resolve:768:81)
+    at moduleResolve (node:internal/modules/esm/resolve:859:18)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at nextResolve (node:internal/modules/esm/hooks:785:28)
+    at resolveBase (file:///root/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1773506629695:2:3744)
+    at resolveDirectory (file:///root/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1773506629695:2:4243)
+    at resolveTsPaths (file:///root/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1773506629695:2:4984)
+    at async resolve (file:///root/.npm/_npx/fd45a72a545557e9/node_modules/tsx/dist/esm/index.mjs?1773506629695:2:5355)
+    at async nextResolve (node:internal/modules/esm/hooks:785:22) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+```
+---
+ pi-test.sh | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/pi-test.sh b/pi-test.sh
+index 665e6408..5bf5f3a6 100755
+--- a/pi-test.sh
++++ b/pi-test.sh
+@@ -3,6 +3,11 @@ set -euo pipefail
+ 
+ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ 
++if [[ ! -d "$SCRIPT_DIR/node_modules" ]]; then
++  echo "Error: node_modules not found. Run 'npm install' first." >&2
++  exit 1
++fi
++
+ # Check for --no-env flag
+ NO_ENV=false
+ ARGS=()
+-- 
+2.50.1 (Apple Git-155)
+

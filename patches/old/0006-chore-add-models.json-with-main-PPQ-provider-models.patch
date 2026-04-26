@@ -1,0 +1,45 @@
+From 670ec1f64cfa4d52940544f994baa423460e92fa Mon Sep 17 00:00:00 2001
+From: webwarrior-ws <reg@webwarrior.ws>
+Date: Wed, 11 Mar 2026 10:45:32 +0100
+Subject: [PATCH 06/15] chore: add models.json with main PPQ provider models
+
+Placed models.json in the repo root, but it should go to `~/.pi/agent/` dir.
+
+It is configured to read API key from `PPQ_API_KEY` env. var.
+---
+ models.json | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+ create mode 100644 models.json
+
+diff --git a/models.json b/models.json
+new file mode 100644
+index 00000000..6c93e669
+--- /dev/null
++++ b/models.json
+@@ -0,0 +1,23 @@
++{
++  "providers": {
++    "PPQ": {
++      "baseUrl": "https://api.ppq.ai",
++      "api": "openai-completions",
++      "apiKey": "PPQ_API_KEY",
++      "models": [
++        {
++          "id": "claude-opus-4.6",
++          "name": "Claude Opus 4.6",
++          "contextWindow": 1000000,
++          "cost": { "input": 5.25, "output": 26.25, "cacheRead": 0, "cacheWrite": 0 }
++        },
++        {
++          "id": "gpt-5.2-codex",
++          "name": "GPT-5.2-Codex",
++          "contextWindow": 400000,
++          "cost": { "input": 1.84, "output": 14.70, "cacheRead": 0, "cacheWrite": 0 }
++        }
++      ]
++    }
++  }
++}
+-- 
+2.50.1 (Apple Git-155)
+
