@@ -1,0 +1,64 @@
+From bcc364fcaa583e02f8554b62f58a042522a2bd94 Mon Sep 17 00:00:00 2001
+From: "Andres G. Aragoneses" <knocte@gmail.com>
+Date: Sun, 15 Mar 2026 11:51:05 +0000
+Subject: [PATCH 03/15] fix: check if build was run in 'npm check'
+
+Otherwise it might give an error such as:
+```
+packages/coding-agent/src/cli.ts:11:10 - error TS2305: Module '"@mariozechner/pi-ai/bedrock-provider"' has no exported member 'bedrockProviderModule'.
+
+11 import { bedrockProviderModule } from "@mariozechner/pi-ai/bedrock-provider";
+            ~~~~~~~~~~~~~~~~~~~~~
+
+Found 1 error in packages/coding-agent/src/cli.ts:11
+```
+
+Which might not be immediately obvious to people that are changing
+non TypeScript sources (which don't really need the build to be
+checked), e.g. changing docs.
+---
+ package.json            |  2 +-
+ scripts/check-built.mjs | 18 ++++++++++++++++++
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+ create mode 100644 scripts/check-built.mjs
+
+diff --git a/package.json b/package.json
+index 958d51bf..2575a96e 100644
+--- a/package.json
++++ b/package.json
+@@ -15,7 +15,7 @@
+ 		"build": "cd packages/tui && npm run build && cd ../ai && npm run build && cd ../agent && npm run build && cd ../coding-agent && npm run build && cd ../mom && npm run build && cd ../web-ui && npm run build && cd ../pods && npm run build",
+ 		"dev": "concurrently --names \"ai,agent,coding-agent,mom,web-ui,tui\" --prefix-colors \"cyan,yellow,red,white,green,magenta\" \"cd packages/ai && npm run dev\" \"cd packages/agent && npm run dev\" \"cd packages/coding-agent && npm run dev\" \"cd packages/mom && npm run dev\" \"cd packages/web-ui && npm run dev\" \"cd packages/tui && npm run dev\"",
+ 		"dev:tsc": "concurrently --names \"ai,web-ui\" --prefix-colors \"cyan,green\" \"cd packages/ai && npm run dev:tsc\" \"cd packages/web-ui && npm run dev:tsc\"",
+-		"check": "biome check --write --error-on-warnings . && tsgo --noEmit && npm run check:browser-smoke && cd packages/web-ui && npm run check",
++		"check": "node scripts/check-built.mjs && biome check --write --error-on-warnings . && tsgo --noEmit && npm run check:browser-smoke && cd packages/web-ui && npm run check",
+ 		"check:browser-smoke": "node scripts/check-browser-smoke.mjs",
+ 		"test": "npm run test --workspaces --if-present",
+ 		"version:patch": "npm version patch -ws --no-git-tag-version && node scripts/sync-versions.js && shx rm -rf node_modules packages/*/node_modules package-lock.json && npm install",
+diff --git a/scripts/check-built.mjs b/scripts/check-built.mjs
+new file mode 100644
+index 00000000..43128462
+--- /dev/null
++++ b/scripts/check-built.mjs
+@@ -0,0 +1,18 @@
++#!/usr/bin/env node
++import { existsSync, readdirSync } from "fs";
++import { join } from "path";
++import { fileURLToPath } from "url";
++
++const root = fileURLToPath(new URL("..", import.meta.url));
++const packagesDir = join(root, "packages");
++const packages = readdirSync(packagesDir, { withFileTypes: true })
++	.filter((entry) => entry.isDirectory())
++	.map((entry) => entry.name);
++const missing = packages.filter((pkg) => !existsSync(join(packagesDir, pkg, "dist")));
++
++if (missing.length > 0) {
++	console.error(
++		`Error: missing dist/ folder(s) for: ${missing.join(", ")}\nRun "npm run build" before "npm run check".`,
++	);
++	process.exit(1);
++}
+-- 
+2.50.1 (Apple Git-155)
+
