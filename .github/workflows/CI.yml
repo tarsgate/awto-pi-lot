@@ -67,7 +67,7 @@ jobs:
       - name: Check package versions
         run: |
           # Get versions from package.json
-          PI_CODING_AGENT_VERSION=$(node -p "require('./package.json').dependencies['@mariozechner/pi-coding-agent']")
+          PI_CODING_AGENT_VERSION=$(node -p "require('./package.json').devDependencies['@mariozechner/pi-coding-agent']")
 
           if [ "$PI_VERSION" != "$PI_CODING_AGENT_VERSION" ]; then
             echo "ERROR: @mariozechner/pi-coding-agent version ($PI_CODING_AGENT_VERSION) does not match PI version ($PI_VERSION)"
