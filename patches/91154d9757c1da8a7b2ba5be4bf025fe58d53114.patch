@@ -5,10 +5,9 @@ Subject: [PATCH] fix: update stale CI test expectations
 
 ---
  .../ai/test/openai-completions-prompt-cache.test.ts    |  3 ++-
- packages/coding-agent/CHANGELOG.md                     |  4 ++++
  packages/coding-agent/test/model-resolver.test.ts      | 10 +++++-----
  .../test/rpc-prompt-response-semantics.test.ts         |  2 +-
- 4 files changed, 12 insertions(+), 7 deletions(-)
+ 3 files changed, 8 insertions(+), 7 deletions(-)
 
 diff --git a/packages/ai/test/openai-completions-prompt-cache.test.ts b/packages/ai/test/openai-completions-prompt-cache.test.ts
 index 11c9ae943f..147097efc4 100644
@@ -26,21 +25,6 @@ index 11c9ae943f..147097efc4 100644
  		});
  		const { payload } = await captureRequest({ cacheRetention: "long", sessionId: "session-proxy" }, model);
  
-diff --git a/packages/coding-agent/CHANGELOG.md b/packages/coding-agent/CHANGELOG.md
-index e9c7a38999..3f2b8acc21 100644
---- a/packages/coding-agent/CHANGELOG.md
-+++ b/packages/coding-agent/CHANGELOG.md
-@@ -2,6 +2,10 @@
- 
- ## [Unreleased]
- 
-+### Fixed
-+
-+- Fixed coding-agent test expectations for current default models and missing-auth guidance.
-+
- ## [0.70.2] - 2026-04-24
- 
- ### Fixed
 diff --git a/packages/coding-agent/test/model-resolver.test.ts b/packages/coding-agent/test/model-resolver.test.ts
 index 511e540864..946d78cb03 100644
 --- a/packages/coding-agent/test/model-resolver.test.ts
