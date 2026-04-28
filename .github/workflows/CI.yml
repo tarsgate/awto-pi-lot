@@ -87,10 +87,8 @@ jobs:
           if [ "$IS_SCHEDULED" != "true" ]; then
             git switch --detach v${PI_VERSION}
           fi
-          wget https://github.com/badlogic/pi-mono/commit/ab744e216dbd350f39f730e29962e5ed3db7217d.patch
           wget https://github.com/badlogic/pi-mono/commit/65fc80367111492611a60753d42487644a247d9d.patch
           apt install --yes patch
-          patch -p1 -i ab744e216dbd350f39f730e29962e5ed3db7217d.patch
           patch -p1 -i 65fc80367111492611a60753d42487644a247d9d.patch
           npm install
           npm run build
