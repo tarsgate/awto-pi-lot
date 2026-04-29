@@ -1,6 +1,6 @@
 # awto-pi-lot [![NPM Version](https://img.shields.io/npm/v/awto-pi-lot)](https://www.npmjs.com/package/awto-pi-lot)
 
-awto-pi-lot is an extension for [pi-coding-agent](https://www.npmjs.com/package/@mariozechner/pi-coding-agent) that adds support for [PPQ.ai](https://ppq.ai/) & its [AutoClaw](https://ppq.ai/blog/using-autoclaw-with-payperq) model.
+awto-pi-lot is an extension for [pi-coding-agent](https://www.npmjs.com/package/@mariozechner/pi-coding-agent) that adds support for [PPQ.ai](https://ppq.ai/) & their [AutoClaw](https://ppq.ai/blog/using-autoclaw-with-payperq) model.
 
 
 ## Info
