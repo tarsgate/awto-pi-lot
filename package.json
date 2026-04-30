@@ -34,7 +34,11 @@
 		"pay-as-you-go",
 		"autoclaw",
 		"bitcoin",
-		"lightning"
+		"lightning",
+		"opencode",
+		"opencode-plugin",
+		"plugin",
+		"extension"
 	],
 	"license": "MIT",
 	"homepage": "https://github.com/tarsgate/awto-pi-lot#readme",
