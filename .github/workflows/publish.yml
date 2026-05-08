@@ -8,10 +8,9 @@ on:
 jobs:
   bin-publish:
 
-    # can't use github.ref because of this bug: https://github.com/orgs/community/discussions/27124
-    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
-    env:
-      HEAD_TAG: ${{ github.event.workflow_run.head_branch }}
+    # can use github.ref when triggered directly by tags, or head_branch for workflow_run triggers
+    # because of this bug: https://github.com/orgs/community/discussions/27124
+    if: ${{ github.event.workflow_run.conclusion == 'success' && (startsWith(github.ref, 'refs/tags/v') || startsWith(github.event.workflow_run.head_branch, 'v')) }}
 
     runs-on: ubuntu-latest
 
@@ -26,11 +25,23 @@ jobs:
       - name: Load variables from .env file
         run: cat .env >> $GITHUB_ENV
 
+      - name: Determine tag version
+        env:
+          REF: ${{ github.ref }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          if [[ "$REF" == refs/tags/v* ]]; then
+            HEAD_TAG="$REF"
+          else
+            HEAD_TAG="$HEAD_BRANCH"
+          fi
+          TAG_VERSION="${HEAD_TAG#refs/tags/}"
+          TAG_VERSION="${TAG_VERSION#v}"
+          echo "HEAD_TAG=$HEAD_TAG" >> "$GITHUB_ENV"
+          echo "TAG_VERSION=$TAG_VERSION" >> "$GITHUB_ENV"
+
       - name: Verify version matches tag
         run: |
-          # Extract tag version (remove 'v' prefix if present)
-          TAG_VERSION="${HEAD_TAG#v}"
-
           # Get version from package.json
           PKG_VERSION=$(node -p "require('./package.json').version")
 
