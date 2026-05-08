@@ -70,10 +70,10 @@ jobs:
       - name: Check package versions
         run: |
           # Get versions from package.json
-          PI_CODING_AGENT_VERSION=$(node -p "require('./package.json').devDependencies['@mariozechner/pi-coding-agent']")
+          PI_CODING_AGENT_VERSION=$(node -p "require('./package.json').devDependencies['@earendil-works/pi-coding-agent']")
 
           if [ "$PI_VERSION" != "$PI_CODING_AGENT_VERSION" ]; then
-            echo "ERROR: @mariozechner/pi-coding-agent version ($PI_CODING_AGENT_VERSION) does not match PI version ($PI_VERSION)"
+            echo "ERROR: @earendil-works/pi-coding-agent version ($PI_CODING_AGENT_VERSION) does not match PI version ($PI_VERSION)"
             exit 1
           fi
 
@@ -85,20 +85,21 @@ jobs:
 
       - name: Test Pi from git with NodeJS version from latest Ubuntu LTS
         run: |
-          git clone https://github.com/badlogic/pi-mono.git
-          cd pi-mono
-          if [ "$IS_SCHEDULED" != "true" ]; then
-            git switch --detach v${PI_VERSION}
-          fi
+          git clone https://github.com/earendil-works/pi.git
+          cd pi
 
-          # compilation of examples seems to be flaky, we don't need them
-          rm -rf ./packages/coding-agent/examples/
-          # and tests that depend on examples
-          rm -f packages/coding-agent/test/plan-mode-utils.test.ts
-          rm -f packages/coding-agent/test/trigger-compact-extension.test.ts
-          # and flaky tests
-          rm -rf ./packages/coding-agent/test/extensions-discovery.test.ts
-          rm -rf ./packages/coding-agent/test/tools.test.ts
+          # disable switching to pinned tag for now
+          #if [ "$IS_SCHEDULED" != "true" ]; then
+          #  git switch --detach v${PI_VERSION}
+          #fi
+
+          git clone "https://github.com/$GH_FULL_REPO.git"
+          cd ${GITHUB_REPOSITORY#*/}
+          git checkout "$GH_SHA"
+          cd ..
+          apt install --yes patch
+          patch -p1 -i ${GITHUB_REPOSITORY#*/}/patches/0001-coding-agent-test-mark-some-tests-as-flaky.patch || echo "Skipped patch, doesn't apply"
+          rm -rf ${GITHUB_REPOSITORY#*/}
 
           npm install
           npm run build
@@ -107,12 +108,12 @@ jobs:
           ./pi-test.sh --version
           ./pi-test.sh --version > ../last_version.txt 2>&1
           cd ..
-          rm -rf pi-mono
+          rm -rf pi/
 
       - name: Download and Install Pi release
         run: |
           VERSION=$(cat last_version.txt)
-          URL="https://github.com/badlogic/pi-mono/releases/download/v${VERSION}/pi-linux-x64.tar.gz"
+          URL="https://github.com/earendil-works/pi/releases/download/v${VERSION}/pi-linux-x64.tar.gz"
           wget "$URL"
           tar -xzf "pi-linux-x64.tar.gz"
           ./pi/pi install "git:github.com/$GH_FULL_REPO@$GH_SHA"

@@ -1,11 +1,11 @@
 # awto-pi-lot [![NPM Version](https://img.shields.io/npm/v/awto-pi-lot)](https://www.npmjs.com/package/awto-pi-lot)
 
-awto-pi-lot is an extension for [pi-coding-agent](https://www.npmjs.com/package/@mariozechner/pi-coding-agent) that adds support for [PPQ.ai](https://ppq.ai/) & their [AutoClaw](https://ppq.ai/blog/using-autoclaw-with-payperq) model.
+awto-pi-lot is an extension for [pi-coding-agent](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) that adds support for [PPQ.ai](https://ppq.ai/) & their [AutoClaw](https://ppq.ai/blog/using-autoclaw-with-payperq) model.
 
 
 ## Info
 
-To see the potential benefits of using PPQ/AutoClaw, see https://github.com/badlogic/pi-mono/discussions/2483
+To see the potential benefits of using PPQ/AutoClaw, see https://github.com/earendil-works/pi/discussions/2483
 
 
 ## Install/use
@@ -37,7 +37,7 @@ pi --extension git:github.com/tarsgate/awto-pi-lot
 
 ## Setup/auth
 
-You can authenticate with an [auth.json](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/providers.md#auth-file) file to hook your key, e.g.:
+You can authenticate with an [auth.json](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/providers.md#auth-file) file to hook your key, e.g.:
 
 ```
 { "ppq": { "type": "api_key", "key": "sk-..." } }

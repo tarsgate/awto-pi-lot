@@ -1,0 +1,51 @@
+From 2b062215ae0fcdba35e561b785dd5c0debd409c5 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Andr=C3=A9s=20G=2E=20Aragoneses?= <knocte@gmail.com>
+Date: Fri, 8 May 2026 20:31:12 +0800
+Subject: [PATCH] coding-agent/test: mark some tests as flaky
+
+---
+ packages/coding-agent/test/config.test.ts | 3 ++-
+ packages/coding-agent/test/tools.test.ts  | 6 ++++--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/packages/coding-agent/test/config.test.ts b/packages/coding-agent/test/config.test.ts
+index 6516beb5..0887f7a9 100644
+--- a/packages/coding-agent/test/config.test.ts
++++ b/packages/coding-agent/test/config.test.ts
+@@ -325,7 +325,8 @@ describe("detectInstallMethod", () => {
+ 		});
+ 	});
+ 
+-	test("does not self-update when npm install path is not writable", () => {
++	// flaky: fails in CI when running as root (root bypasses read-only permissions)
++	test.skip("does not self-update when npm install path is not writable", () => {
+ 		const { packageDir } = createNpmPrefixInstall();
+ 		chmodSync(packageDir, 0o500);
+ 
+diff --git a/packages/coding-agent/test/tools.test.ts b/packages/coding-agent/test/tools.test.ts
+index 70e4e54f..97bd7c41 100644
+--- a/packages/coding-agent/test/tools.test.ts
++++ b/packages/coding-agent/test/tools.test.ts
+@@ -379,7 +379,8 @@ describe("Coding Agent Tools", () => {
+ 			expect(readFileSync(testFile, "utf-8")).toBe(originalContent);
+ 		});
+ 
+-		it("should include EACCES for read-only files", async () => {
++		// flaky: fails in CI when running as root (root bypasses read-only permissions)
++		it.skip("should include EACCES for read-only files", async () => {
+ 			const testFile = join(testDir, "edit-readonly.txt");
+ 			writeFileSync(testFile, "hello\n");
+ 			chmodSync(testFile, 0o444);
+@@ -418,7 +419,8 @@ describe("Coding Agent Tools", () => {
+ 			expect(result).toEqual({ error: `Could not edit file: ${missingFile}. Error code: ENOENT.` });
+ 		});
+ 
+-		it("should include EACCES in diff preview for unreadable files", async () => {
++		// flaky: fails in CI when running as root (root bypasses read-only permissions)
++		it.skip("should include EACCES in diff preview for unreadable files", async () => {
+ 			const unreadableFile = join(testDir, "unreadable-preview.txt");
+ 			writeFileSync(unreadableFile, "hello\n");
+ 			chmodSync(unreadableFile, 0o222);
+-- 
+2.50.1 (Apple Git-155)
+
