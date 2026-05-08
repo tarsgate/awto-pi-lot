@@ -49,20 +49,20 @@ jobs:
           echo "Package.json version: $PKG_VERSION"
 
           # Compare versions
-          #if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
-          #  echo "ERROR: Git tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
-          #  exit 1
-          #fi
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "ERROR: Git tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
 
-          #PKG_MINOR_PATCH="${PKG_VERSION#*.}"
-          #PI_MINOR_PATCH="${PI_VERSION#*.}"
+          PKG_MINOR_PATCH="${PKG_VERSION#*.}"
+          PI_MINOR_PATCH="${PI_VERSION#*.}"
 
-          #if [ "$PKG_MINOR_PATCH" != "$PI_MINOR_PATCH" ]; then
-          #    echo "Minor and patch components of package.json version ($PKG_VERSION) are different from corresponding components of pi version ($PI_VERSION)"
-          #    exit 1
-          #fi
+          if [ "$PKG_MINOR_PATCH" != "$PI_MINOR_PATCH" ]; then
+              echo "Minor and patch components of package.json version ($PKG_VERSION) are different from corresponding components of pi version ($PI_VERSION)"
+              exit 1
+          fi
 
-          #echo "✓ Versions match!"
+          echo "✓ Versions match!"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -81,9 +81,6 @@ jobs:
 
       - name: Publish awto-pi-lot to npm
         run: |
-          # undo release mistake
-          npm unpublish awto-pi-lot@2.74.0
-
           npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
