@@ -109,8 +109,8 @@ async function filterPpqModels(
             } as ProviderModelConfig);
         }
 
-        const defaultModelId = "auto";
-        const secondDefaultModelId = "autoclaw";
+        const defaultModelId = "autoclaw";
+        const secondDefaultModelId = "auto";
         models.sort((a, b) => {
             const position = (id: string) => {
                 switch (id) {
