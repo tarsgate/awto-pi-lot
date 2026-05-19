@@ -5,7 +5,7 @@
 	"description": "pi-coding-agent extension that adds PPQ.ai provider and their AutoClaw model",
 	"pi": {
 		"extensions": [
-			"./src/index.ts"
+			"./index.ts"
 		]
 	},
 	"scripts": {
