@@ -55,7 +55,7 @@ async function fetchPpqModels(): Promise<PPQModel[]> {
             return [];
         }
         const data = (await response.json()) as PPQApiResponse;
-        console.log(`Fetched ${data.data.length} models from PPQ.ai`);
+        console.log(`\r\nFetched ${data.data.length} models from PPQ.ai`);
         return data.data;
     } catch (error) {
         console.error("Failed to fetch PPQ.ai models:\n", error);
