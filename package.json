@@ -1,6 +1,6 @@
 {
 	"name": "awto-pi-lot",
-	"version": "2.75.5",
+	"version": "2.79.9",
 	"type": "module",
 	"description": "pi-coding-agent extension that adds PPQ.ai provider and their AutoClaw model",
 	"pi": {
@@ -43,7 +43,7 @@
 		"fp-sdk": "0.1.2"
 	},
 	"devDependencies": {
-		"@earendil-works/pi-coding-agent": "0.75.5",
+		"@earendil-works/pi-coding-agent": "0.79.9",
 		"prettier": "2.8.3",
 		"@biomejs/biome": "2.3.5",
 		"@types/node": "22.10.5",
