@@ -164,6 +164,9 @@ export function registerNanoGptProvider(
         apiKey: apiKeyEnvVarName,
         authHeader: true,
         api: "openai-completions",
+        headers: {
+            "x-target-url": `${nanoGptBaseUrl}/chat/completions`,
+        },
         models: models,
     });
     logger.log(

@@ -177,6 +177,7 @@ export function registerPpqProvider(
         name: providerName,
         baseUrl: baseUrl,
         api: "openai-completions",
+        headers: { "x-target-url": `${ppqApiBaseUrl}/chat/completions` },
         apiKey: apiKeyEnvVarName,
         models: models,
     });
