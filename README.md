@@ -1,6 +1,6 @@
 # awto-pi-lot [![NPM Version](https://img.shields.io/npm/v/awto-pi-lot)](https://www.npmjs.com/package/awto-pi-lot)
 
-awto-pi-lot is an extension for [pi-coding-agent](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) that adds support for [PPQ.ai](https://ppq.ai/) & their [AutoClaw](https://ppq.ai/blog/using-autoclaw-with-payperq) model.
+awto-pi-lot is an extension for [pi-coding-agent](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) that adds support for [PPQ.ai](https://ppq.ai/) & their [AutoClaw](https://ppq.ai/blog/using-autoclaw-with-payperq) model, as well as [NanoGPT](https://nano-gpt.com/).
 
 
 ## Info
@@ -37,6 +37,8 @@ pi --extension git:github.com/tarsgate/awto-pi-lot
 
 ## Setup/auth
 
+### PPQ.ai
+
 You can authenticate with an [auth.json](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/providers.md#auth-file) file to hook your key, e.g.:
 
 ```
@@ -46,6 +48,10 @@ You can authenticate with an [auth.json](https://github.com/earendil-works/pi/bl
 Which you can extract from your [PPQ.ai account page](https://ppq.ai/account-activity), and place in `~/.pi/agent/auth.json`.
 
 Using env var PPQ_API_KEY is also supported but not recommended, because security tools like [skynot](https://github.com/tarsgate/skynot) or [pi-less-yolo](https://github.com/cjermain/pi-less-yolo) don't work with env vars OOTB.
+
+### NanoGPT
+
+Same as PPQ.ai, but provider name in `auth.json` file is `nanogpt` and env. var name is `NANOGPT_API_KEY` .
 
 ---
 

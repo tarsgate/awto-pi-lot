@@ -6,6 +6,7 @@ import type {
     ProviderModelConfig,
 } from "@earendil-works/pi-coding-agent";
 import { OptionHelpers, Some } from "fp-sdk";
+import { registerNanoGptProvider } from "./nano-gpt.js";
 
 interface PPQPricing {
     input_per_1M_tokens: number;
@@ -157,6 +158,8 @@ export default async function (pi: ExtensionAPI) {
             `ERROR: no models from PPQ.ai could be fetched/configured`
         );
     }
+
+    await registerNanoGptProvider(pi);
 
     return;
 }
