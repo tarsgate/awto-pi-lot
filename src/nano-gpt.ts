@@ -9,10 +9,18 @@ import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { Empty } from "fp-sdk";
 
+interface NanoGptPricing {
+    prompt: number;
+    completion: number;
+    currency: string;
+    unit: string;
+}
+
 interface NanoGptModel {
     id: string;
     context_length: number;
     max_output_tokens?: number;
+    pricing: NanoGptPricing;
 }
 
 const baseUrl = "https://nano-gpt.com/api/v1";
@@ -47,8 +55,8 @@ function mapModels(list: NanoGptModel[]) {
                     model.id.includes("r1") || model.id.includes("thinking"),
                 input: ["text"] as ("text" | "image")[],
                 cost: {
-                    input: 0,
-                    output: 0,
+                    input: model.pricing.prompt,
+                    output: model.pricing.completion,
                     cacheRead: 0,
                     cacheWrite: 0,
                 },
