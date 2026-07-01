@@ -2,30 +2,30 @@ import type {
     ExtensionAPI,
     ProviderModelConfig,
 } from "@earendil-works/pi-coding-agent";
-import { OptionHelpers, Some } from "fp-sdk";
+import { Empty, OptionHelpers, Some } from "fp-sdk";
 
-interface PPQPricing {
+interface PpqPricing {
     input_per_1M_tokens: number;
     output_per_1M_tokens: number;
 }
 
-interface PPQArchitecture {
+interface PpqArchitecture {
     modality: string;
-    input_modalities: string[];
-    output_modalities: string[];
+    input_modalities: Array<string>;
+    output_modalities: Array<string>;
 }
 
-interface PPQModel {
+interface PpqModel {
     id: string;
     name: string;
     context_length: number;
-    pricing: PPQPricing;
-    supported_parameters?: string[];
-    architecture?: PPQArchitecture;
+    pricing: PpqPricing;
+    supported_parameters?: Array<string>;
+    architecture?: PpqArchitecture;
 }
 
-interface PPQApiResponse {
-    data: PPQModel[];
+interface PpqApiResponse {
+    data: Array<PpqModel>;
 }
 
 export const ppqApiBaseUrl = "https://api.ppq.ai";
@@ -41,7 +41,7 @@ function isMetaModel(modelId: string): boolean {
     );
 }
 
-export async function fetchPpqModels(): Promise<PPQModel[]> {
+export async function fetchPpqModels(): Promise<Array<PpqModel>> {
     try {
         console.log("Fetching models from PPQ.ai...");
         const response = await fetch(`${ppqApiBaseUrl}/v1/models`);
@@ -49,22 +49,22 @@ export async function fetchPpqModels(): Promise<PPQModel[]> {
             console.error(
                 `Failed to fetch PPQ.ai models due to HTTP error; status: ${response.status}`
             );
-            return [];
+            return Empty.array();
         }
-        const data = (await response.json()) as PPQApiResponse;
+        const data = (await response.json()) as PpqApiResponse;
         console.log(`\r\nFetched ${data.data.length} models from PPQ.ai`);
         return data.data;
     } catch (error) {
         console.error("Failed to fetch PPQ.ai models:\n", error);
-        return [];
+        return Empty.array();
     }
 }
 
 export async function filterPpqModels(
-    apiModels: PPQModel[]
-): Promise<ProviderModelConfig[]> {
+    apiModels: Array<PpqModel>
+): Promise<Array<ProviderModelConfig>> {
     try {
-        const models: ProviderModelConfig[] = [];
+        const models: Array<ProviderModelConfig> = Empty.array();
 
         for (const model of apiModels) {
             const maybeSupportedParameters = OptionHelpers.ofObj(
@@ -73,7 +73,7 @@ export async function filterPpqModels(
             const supportedParameters =
                 maybeSupportedParameters instanceof Some
                     ? maybeSupportedParameters.value
-                    : [];
+                    : Empty.array();
             const architecture = OptionHelpers.ofObj(model.architecture);
 
             // pi requires models to have tool support
@@ -84,7 +84,7 @@ export async function filterPpqModels(
                 continue;
             }
 
-            let inputModalities: ("text" | "image")[] = ["text"];
+            let inputModalities: Array<"text" | "image"> = ["text"];
             if (architecture instanceof Some) {
                 inputModalities = architecture.value.input_modalities.filter(
                     (modality) => modality === "text" || modality === "image"
@@ -131,7 +131,7 @@ export async function filterPpqModels(
         return models;
     } catch (error) {
         console.error("Failed to filter PPQ.ai models:\n", error);
-        return [];
+        return Empty.array();
     }
 }
 

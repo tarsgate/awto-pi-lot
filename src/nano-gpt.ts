@@ -23,12 +23,12 @@ interface NanoGptModel {
     pricing: NanoGptPricing;
 }
 
-const baseUrl = "https://nano-gpt.com/api/v1";
+const nanoGptBaseUrl = "https://nano-gpt.com/api/v1";
 
 async function fetchJson(
     url: string,
     apiKey?: string
-): Promise<NanoGptModel[]> {
+): Promise<Array<NanoGptModel>> {
     const headers = apiKey
         ? { Authorization: `Bearer ${apiKey}` }
         : (Empty.object() as RequestInit["headers"]);
@@ -41,11 +41,13 @@ async function fetchJson(
         );
         return Empty.array();
     }
-    const responseJson = (await response.json()) as { data: NanoGptModel[] };
+    const responseJson = (await response.json()) as {
+        data: Array<NanoGptModel>;
+    };
     return responseJson.data;
 }
 
-function mapModels(list: NanoGptModel[]) {
+function mapModels(list: Array<NanoGptModel>) {
     return list.map(
         (model) =>
             ({
@@ -53,7 +55,7 @@ function mapModels(list: NanoGptModel[]) {
                 name: model.id,
                 reasoning:
                     model.id.includes("r1") || model.id.includes("thinking"),
-                input: ["text"] as ("text" | "image")[],
+                input: ["text"] as Array<"text" | "image">,
                 cost: {
                     input: model.pricing.prompt,
                     output: model.pricing.completion,
@@ -67,7 +69,10 @@ function mapModels(list: NanoGptModel[]) {
 }
 
 async function fetchModels(apiKey?: string) {
-    const models = await fetchJson(`${baseUrl}/models?detailed=true`, apiKey);
+    const models = await fetchJson(
+        `${nanoGptBaseUrl}/models?detailed=true`,
+        apiKey
+    );
     return mapModels(models);
 }
 
@@ -84,7 +89,7 @@ export async function registerNanoGptProvider(pi: ExtensionAPI) {
             );
             pi.registerProvider(providerId, {
                 name: "NanoGPT",
-                baseUrl,
+                baseUrl: nanoGptBaseUrl,
                 apiKey: apiKeyEnvVarName,
                 authHeader: true,
                 api: "openai-completions",
