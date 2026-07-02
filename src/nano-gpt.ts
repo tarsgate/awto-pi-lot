@@ -21,6 +21,7 @@ interface NanoGptModel {
     context_length: number;
     max_output_tokens?: number;
     pricing: NanoGptPricing;
+    capabilities: Record<string, boolean>;
 }
 
 const nanoGptBaseUrl = "https://nano-gpt.com/api/v1";
@@ -53,8 +54,7 @@ function mapModels(list: Array<NanoGptModel>) {
             ({
                 id: model.id,
                 name: model.id,
-                reasoning:
-                    model.id.includes("r1") || model.id.includes("thinking"),
+                reasoning: model.capabilities["reasoning"],
                 input: ["text"] as Array<"text" | "image">,
                 cost: {
                     input: model.pricing.prompt,
@@ -73,7 +73,31 @@ async function fetchModels(apiKey?: string) {
         `${nanoGptBaseUrl}/models?detailed=true`,
         apiKey
     );
-    return mapModels(models);
+    console.log(`\r\nFetched ${models.length} models from nano-gpt.com`);
+
+    const autoModelPrefix = "auto-model";
+    // pi requires models to have tool support
+    const filteredModels = models.filter(
+        (model) =>
+            model.id.startsWith(autoModelPrefix) ||
+            model.capabilities["tool_calling"]
+    );
+    console.log(
+        `Found ${filteredModels.length} compatible models from nano-gpt.com`
+    );
+
+    filteredModels.sort((a, b) => {
+        const position = (id: string) =>
+            id.startsWith(autoModelPrefix) ? 0 : 1;
+        const diff = position(a.id) - position(b.id);
+        if (diff !== 0) {
+            return diff;
+        }
+        // alphabetically sort models that come after the defaults
+        return a.id.localeCompare(b.id);
+    });
+
+    return mapModels(filteredModels);
 }
 
 export async function registerNanoGptProvider(pi: ExtensionAPI) {
