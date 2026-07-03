@@ -2,7 +2,7 @@
 	"name": "awto-pi-lot",
 	"version": "2.79.9",
 	"type": "module",
-	"description": "pi-coding-agent extension that adds PPQ.ai provider and their AutoClaw model",
+	"description": "pi-coding-agent extension that adds support for PPQ.ai & Nano-GPT.com providers along with their auto models",
 	"pi": {
 		"extensions": [
 			"./index.ts"
@@ -26,6 +26,12 @@
 		"agent",
 		"ppq",
 		"ppq.ai",
+		"nanogpt",
+		"nano-gpt",
+		"automodel",
+		"auto-model",
+		"accountless",
+		"pay-as-you-go",
 		"autoclaw",
 		"bitcoin",
 		"lightning"
