@@ -28,6 +28,9 @@ interface PpqApiResponse {
     data: Array<PpqModel>;
 }
 
+const providerId = "ppq";
+const providerName = "PPQ.ai";
+const apiKeyEnvVarName = "PPQ_API_KEY";
 export const ppqApiBaseUrl = "https://api.ppq.ai";
 
 function isMetaModel(modelId: string): boolean {
@@ -41,26 +44,28 @@ function isMetaModel(modelId: string): boolean {
     );
 }
 
-export async function fetchPpqModels(): Promise<Array<PpqModel>> {
+async function fetchModels(): Promise<Array<PpqModel>> {
     try {
-        console.log("Fetching models from PPQ.ai...");
+        console.log(`Fetching models from ${providerName}...`);
         const response = await fetch(`${ppqApiBaseUrl}/v1/models`);
         if (!response.ok) {
             console.error(
-                `Failed to fetch PPQ.ai models due to HTTP error; status: ${response.status}`
+                `Failed to fetch ${providerName} models due to HTTP error; status: ${response.status}`
             );
             return Empty.array();
         }
         const data = (await response.json()) as PpqApiResponse;
-        console.log(`\r\nFetched ${data.data.length} models from PPQ.ai`);
+        console.log(
+            `\r\nFetched ${data.data.length} models from ${providerName}`
+        );
         return data.data;
     } catch (error) {
-        console.error("Failed to fetch PPQ.ai models:\n", error);
+        console.error(`Failed to fetch ${providerName} models:\n`, error);
         return Empty.array();
     }
 }
 
-export async function filterPpqModels(
+async function filterModels(
     apiModels: Array<PpqModel>
 ): Promise<Array<ProviderModelConfig>> {
     try {
@@ -127,28 +132,33 @@ export async function filterPpqModels(
             return a.id.localeCompare(b.id);
         });
 
-        console.log(`Found ${models.length} compatible models from PPQ.ai`);
+        console.log(
+            `Found ${models.length} compatible models from ${providerName}`
+        );
         return models;
     } catch (error) {
-        console.error("Failed to filter PPQ.ai models:\n", error);
+        console.error(`Failed to filter ${providerName} models:\n`, error);
         return Empty.array();
     }
 }
 
 export async function registerPpqProvider(pi: ExtensionAPI) {
-    const apiModels = await fetchPpqModels();
-    const models = await filterPpqModels(apiModels);
+    const apiModels = await fetchModels();
+    const models = await filterModels(apiModels);
     if (models.length > 0) {
-        pi.registerProvider("ppq", {
+        pi.registerProvider(providerId, {
+            name: providerName,
             baseUrl: ppqApiBaseUrl,
             api: "openai-completions",
-            apiKey: "PPQ_API_KEY",
+            apiKey: apiKeyEnvVarName,
             models: models,
         });
-        console.log(`Successfully loaded ${models.length} models from PPQ.ai`);
+        console.log(
+            `Successfully loaded ${models.length} models from ${providerName}`
+        );
     } else {
         console.error(
-            `ERROR: no models from PPQ.ai could be fetched/configured`
+            `ERROR: no models from ${providerName} could be fetched/configured`
         );
     }
 }
