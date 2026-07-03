@@ -7,7 +7,8 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-import { Empty } from "fp-sdk";
+import { Empty, Some, Nothing, type Option, OptionHelpers } from "fp-sdk";
+import type { Logger } from "./awto-pi-lot.js";
 
 interface NanoGptPricing {
     prompt: number;
@@ -25,21 +26,25 @@ interface NanoGptModel {
 }
 
 const providerId = "nanogpt";
-const providerName = "NanoGPT";
+export const providerName = "NanoGPT";
 const apiKeyEnvVarName = "NANOGPT_API_KEY";
 const nanoGptBaseUrl = "https://nano-gpt.com/api/v1";
 
-async function fetchModels(apiKey?: string): Promise<Array<NanoGptModel>> {
+async function fetchModels(
+    apiKey: Option<string>,
+    logger: Logger
+): Promise<Array<NanoGptModel>> {
     try {
-        console.log(`Fetching models from ${providerName}...`);
-        const headers = apiKey
-            ? { Authorization: `Bearer ${apiKey}` }
-            : (Empty.object() as RequestInit["headers"]);
+        logger.log(`Fetching models from ${providerName}...`);
+        const headers =
+            apiKey instanceof Some
+                ? { Authorization: `Bearer ${apiKey.value}` }
+                : (Empty.object() as RequestInit["headers"]);
         const response = await fetch(`${nanoGptBaseUrl}/models?detailed=true`, {
             headers,
         });
         if (!response.ok) {
-            console.error(
+            logger.error(
                 `Failed to fetch ${providerName} models due to HTTP error; status: ${response.status}`
             );
             return Empty.array();
@@ -47,18 +52,19 @@ async function fetchModels(apiKey?: string): Promise<Array<NanoGptModel>> {
         const responseJson = (await response.json()) as {
             data: Array<NanoGptModel>;
         };
-        console.log(
+        logger.log(
             `\r\nFetched ${responseJson.data.length} models from ${providerName}`
         );
         return responseJson.data;
     } catch (error) {
-        console.error(`Failed to fetch models from ${providerName}:\n`, error);
+        logger.error(`Failed to fetch models from ${providerName}:\n${error}`);
         return Empty.array();
     }
 }
 
 function filterModels(
-    apiModels: Array<NanoGptModel>
+    apiModels: Array<NanoGptModel>,
+    logger: Logger
 ): Array<ProviderModelConfig> {
     const models: Array<ProviderModelConfig> = Empty.array();
 
@@ -99,44 +105,59 @@ function filterModels(
         return a.id.localeCompare(b.id);
     });
 
-    console.log(
-        `Found ${models.length} compatible models from ${providerName}`
-    );
+    logger.log(`Found ${models.length} compatible models from ${providerName}`);
     return models;
 }
 
-export async function registerNanoGptProvider(pi: ExtensionAPI) {
-    // Initial loading if a key already exists
-    let apiKey = process.env[apiKeyEnvVarName];
-    if (!apiKey) {
-        const authJsonPath = join(getAgentDir(), "auth.json");
-        if (existsSync(authJsonPath)) {
-            const auth = JSON.parse(
-                readFileSync(authJsonPath, "utf-8")
-            ) as Record<string, { key?: string }>;
-            if (Object.hasOwn(auth, providerId)) {
-                apiKey = auth[providerId].key;
-            }
+function getNanoGptApiKey(): Option<string> {
+    const envKey = process.env[apiKeyEnvVarName];
+    if (envKey) {
+        return OptionHelpers.ofObj(envKey);
+    }
+    const authJsonPath = join(getAgentDir(), "auth.json");
+    if (existsSync(authJsonPath)) {
+        const auth = JSON.parse(readFileSync(authJsonPath, "utf-8")) as Record<
+            string,
+            { key?: string }
+        >;
+        if (Object.hasOwn(auth, providerId)) {
+            return OptionHelpers.ofObj(auth[providerId].key);
         }
     }
+    return Nothing;
+}
 
-    const apiModels = await fetchModels(apiKey);
-    const models = filterModels(apiModels);
-    if (models.length > 0) {
-        pi.registerProvider(providerId, {
-            name: providerName,
-            baseUrl: nanoGptBaseUrl,
-            apiKey: apiKeyEnvVarName,
-            authHeader: true,
-            api: "openai-completions",
-            models: models,
-        });
-        console.log(
-            `Successfully loaded ${models.length} models from ${providerName}`
-        );
-    } else {
-        console.error(
+export async function fetchNanoGptModels(
+    logger: Logger
+): Promise<Array<ProviderModelConfig>> {
+    const apiKey = getNanoGptApiKey();
+    const apiModels = await fetchModels(apiKey, logger);
+    const models = filterModels(apiModels, logger);
+    if (models.length === 0) {
+        logger.error(
             `ERROR: no models from ${providerName} could be fetched/configured`
         );
     }
+    return models;
+}
+
+export function registerNanoGptProvider(
+    pi: ExtensionAPI,
+    models: Array<ProviderModelConfig>,
+    logger: Logger
+) {
+    if (models.length === 0) {
+        return;
+    }
+    pi.registerProvider(providerId, {
+        name: providerName,
+        baseUrl: nanoGptBaseUrl,
+        apiKey: apiKeyEnvVarName,
+        authHeader: true,
+        api: "openai-completions",
+        models: models,
+    });
+    logger.log(
+        `Successfully loaded ${models.length} models from ${providerName}`
+    );
 }

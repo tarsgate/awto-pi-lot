@@ -3,6 +3,7 @@ import type {
     ProviderModelConfig,
 } from "@earendil-works/pi-coding-agent";
 import { Empty, OptionHelpers, Some } from "fp-sdk";
+import type { Logger } from "./awto-pi-lot.js";
 
 interface PpqPricing {
     input_per_1M_tokens: number;
@@ -29,7 +30,7 @@ interface PpqApiResponse {
 }
 
 const providerId = "ppq";
-const providerName = "PPQ.ai";
+export const providerName = "PPQ.ai";
 const apiKeyEnvVarName = "PPQ_API_KEY";
 export const ppqApiBaseUrl = "https://api.ppq.ai";
 
@@ -44,29 +45,30 @@ function isMetaModel(modelId: string): boolean {
     );
 }
 
-async function fetchModels(): Promise<Array<PpqModel>> {
+async function fetchModels(logger: Logger): Promise<Array<PpqModel>> {
     try {
-        console.log(`Fetching models from ${providerName}...`);
+        logger.log(`Fetching models from ${providerName}...`);
         const response = await fetch(`${ppqApiBaseUrl}/v1/models`);
         if (!response.ok) {
-            console.error(
+            logger.error(
                 `Failed to fetch ${providerName} models due to HTTP error; status: ${response.status}`
             );
             return Empty.array();
         }
         const data = (await response.json()) as PpqApiResponse;
-        console.log(
+        logger.log(
             `\r\nFetched ${data.data.length} models from ${providerName}`
         );
         return data.data;
     } catch (error) {
-        console.error(`Failed to fetch ${providerName} models:\n`, error);
+        logger.error(`Failed to fetch ${providerName} models:\n${error}`);
         return Empty.array();
     }
 }
 
 async function filterModels(
-    apiModels: Array<PpqModel>
+    apiModels: Array<PpqModel>,
+    logger: Logger
 ): Promise<Array<ProviderModelConfig>> {
     try {
         const models: Array<ProviderModelConfig> = Empty.array();
@@ -132,33 +134,45 @@ async function filterModels(
             return a.id.localeCompare(b.id);
         });
 
-        console.log(
+        logger.log(
             `Found ${models.length} compatible models from ${providerName}`
         );
         return models;
     } catch (error) {
-        console.error(`Failed to filter ${providerName} models:\n`, error);
+        logger.error(`Failed to filter ${providerName} models:\n${error}`);
         return Empty.array();
     }
 }
 
-export async function registerPpqProvider(pi: ExtensionAPI) {
-    const apiModels = await fetchModels();
-    const models = await filterModels(apiModels);
-    if (models.length > 0) {
-        pi.registerProvider(providerId, {
-            name: providerName,
-            baseUrl: ppqApiBaseUrl,
-            api: "openai-completions",
-            apiKey: apiKeyEnvVarName,
-            models: models,
-        });
-        console.log(
-            `Successfully loaded ${models.length} models from ${providerName}`
-        );
-    } else {
-        console.error(
+export async function fetchPpqModels(
+    logger: Logger
+): Promise<Array<ProviderModelConfig>> {
+    const apiModels = await fetchModels(logger);
+    const models = await filterModels(apiModels, logger);
+    if (models.length === 0) {
+        logger.error(
             `ERROR: no models from ${providerName} could be fetched/configured`
         );
     }
+    return models;
+}
+
+export function registerPpqProvider(
+    pi: ExtensionAPI,
+    models: Array<ProviderModelConfig>,
+    logger: Logger
+) {
+    if (models.length === 0) {
+        return;
+    }
+    pi.registerProvider(providerId, {
+        name: providerName,
+        baseUrl: ppqApiBaseUrl,
+        api: "openai-completions",
+        apiKey: apiKeyEnvVarName,
+        models: models,
+    });
+    logger.log(
+        `Successfully loaded ${models.length} models from ${providerName}`
+    );
 }
