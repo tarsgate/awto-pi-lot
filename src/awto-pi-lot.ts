@@ -56,7 +56,9 @@ async function setupNanoGptProvider(pi: ExtensionAPI) {
 }
 
 export default async function (pi: ExtensionAPI) {
-    console.log(`${packageJson.name} v${packageJson.version} initializing...`);
+    console.log(
+        `${packageJson.name} v${packageJson.version} initializing...\r\n`
+    );
 
     await Promise.all([setupPpqProvider(pi), setupNanoGptProvider(pi)]);
 

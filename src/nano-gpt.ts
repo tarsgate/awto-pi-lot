@@ -53,7 +53,7 @@ async function fetchModels(
             data: Array<NanoGptModel>;
         };
         logger.log(
-            `\r\nFetched ${responseJson.data.length} models from ${providerName}`
+            `Fetched ${responseJson.data.length} models from ${providerName}`
         );
         return responseJson.data;
     } catch (error) {
@@ -147,6 +147,9 @@ export function registerNanoGptProvider(
     logger: Logger
 ) {
     if (models.length === 0) {
+        logger.error(
+            `WARNING: empty model list from ${providerName}, skipping provider registration`
+        );
         return;
     }
     pi.registerProvider(providerId, {
@@ -158,6 +161,6 @@ export function registerNanoGptProvider(
         models: models,
     });
     logger.log(
-        `Successfully loaded ${models.length} models from ${providerName}`
+        `Successfully loaded ${models.length} models from ${providerName}\r\n`
     );
 }

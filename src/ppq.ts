@@ -56,9 +56,7 @@ async function fetchModels(logger: Logger): Promise<Array<PpqModel>> {
             return Empty.array();
         }
         const data = (await response.json()) as PpqApiResponse;
-        logger.log(
-            `\r\nFetched ${data.data.length} models from ${providerName}`
-        );
+        logger.log(`Fetched ${data.data.length} models from ${providerName}`);
         return data.data;
     } catch (error) {
         logger.error(`Failed to fetch ${providerName} models:\n${error}`);
@@ -163,6 +161,9 @@ export function registerPpqProvider(
     logger: Logger
 ) {
     if (models.length === 0) {
+        logger.error(
+            `WARNING: empty model list from ${providerName}, skipping provider registration`
+        );
         return;
     }
     pi.registerProvider(providerId, {
@@ -173,6 +174,6 @@ export function registerPpqProvider(
         models: models,
     });
     logger.log(
-        `Successfully loaded ${models.length} models from ${providerName}`
+        `Successfully loaded ${models.length} models from ${providerName}\r\n`
     );
 }
