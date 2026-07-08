@@ -111,7 +111,7 @@ jobs:
           # extension loads successfully, it will abort due to 'No API Key found')
           (./pi/pi --print "dummy prompt" 2>&1 | tee output.txt)
 
-          # therefore, we check the output for success or not
-          grep --quiet Success output.txt
+          # therefore, we check the output for success or not (word "parallel" is printed as part of string "Successfully loaded models from ... and ... in parallel")
+          grep --quiet parallel output.txt
           # --null-data is to scan whole file, not line by line
           grep --invert-match --quiet --null-data --ignore-case error output.txt

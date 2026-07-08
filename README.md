@@ -1,11 +1,11 @@
 # awto-pi-lot [![NPM Version](https://img.shields.io/npm/v/awto-pi-lot)](https://www.npmjs.com/package/awto-pi-lot)
 
-awto-pi-lot is an extension for [pi-coding-agent](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) that adds support for [PPQ.ai](https://ppq.ai/) & their [AutoClaw](https://ppq.ai/blog/using-autoclaw-with-payperq) model.
+awto-pi-lot is an extension for [pi-coding-agent](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) that adds support for [PPQ.ai](https://ppq.ai/) & [NanoGPT](https://nano-gpt.com/) providers.
 
 
 ## Info
 
-To see the potential benefits of using PPQ/AutoClaw, see https://github.com/earendil-works/pi/discussions/2483
+To see the potential benefits of using accountless AI providers, see https://github.com/earendil-works/pi/discussions/2483
 
 
 ## Install/use
@@ -40,12 +40,15 @@ pi --extension git:github.com/tarsgate/awto-pi-lot
 You can authenticate with an [auth.json](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/providers.md#auth-file) file to hook your key, e.g.:
 
 ```
-{ "ppq": { "type": "api_key", "key": "sk-..." } }
+{
+  "ppq": { "type": "api_key", "key": "sk-..." },
+  "nanogpt": { "type": "api_key", "key": "sk-nano-..." }
+}
 ```
 
-Which you can extract from your [PPQ.ai account page](https://ppq.ai/account-activity), and place in `~/.pi/agent/auth.json`.
+And place in `~/.pi/agent/auth.json`.
 
-Using env var PPQ_API_KEY is also supported but not recommended, because security tools like [skynot](https://github.com/tarsgate/skynot) or [pi-less-yolo](https://github.com/cjermain/pi-less-yolo) don't work with env vars OOTB.
+Using env vars (PPQ_API_KEY, NANOGPT_API_KEY) is also supported but not recommended, because security tools like [skynot](https://github.com/tarsgate/skynot) or [pi-less-yolo](https://github.com/cjermain/pi-less-yolo) might not work well with env vars OOTB.
 
 ---
 
