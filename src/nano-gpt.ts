@@ -7,6 +7,7 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
+import { getBaseUrlFromModelsJson } from "./helpers.js";
 import { Empty, Some, Nothing, type Option, OptionHelpers } from "fp-sdk";
 import type { Logger } from "./awto-pi-lot.js";
 
@@ -152,12 +153,20 @@ export function registerNanoGptProvider(
         );
         return;
     }
+    const maybeCustomBaseUrl = getBaseUrlFromModelsJson(providerId);
+    const baseUrl =
+        maybeCustomBaseUrl instanceof Some
+            ? maybeCustomBaseUrl.value
+            : nanoGptBaseUrl;
     pi.registerProvider(providerId, {
         name: providerName,
-        baseUrl: nanoGptBaseUrl,
+        baseUrl: baseUrl,
         apiKey: apiKeyEnvVarName,
         authHeader: true,
         api: "openai-completions",
+        headers: {
+            "x-target-url": `${nanoGptBaseUrl}/chat/completions`,
+        },
         models: models,
     });
     logger.log(
