@@ -8,7 +8,8 @@ import {
     registerPpqProviderInPi,
 } from "./ppq.js";
 import {
-    fetchNanoGptModels,
+    getNanoGptApiKey,
+    fetchNanoGptModelsForPi,
     providerName as nanoGptProviderName,
     registerNanoGptProviderInPi,
 } from "./nano-gpt.js";
@@ -23,7 +24,8 @@ async function setupPpqProvider(pi: ExtensionAPI) {
 
 async function setupNanoGptProvider(pi: ExtensionAPI) {
     const logger = new Logger();
-    const models = await fetchNanoGptModels(logger);
+    const apiKey = getNanoGptApiKey();
+    const models = await fetchNanoGptModelsForPi(apiKey, logger);
     registerNanoGptProviderInPi(pi, models, logger);
     await logger.flush();
 }

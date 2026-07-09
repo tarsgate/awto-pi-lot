@@ -8,6 +8,12 @@ import {
     fetchPpqModelsForOpenCode,
     providerName as ppqProviderName,
 } from "./ppq.js";
+import {
+    fetchNanoGptModelsForOpenCode,
+    apiKeyEnvVarName as nanoGptApiKeyEnvVarName,
+    registerNanoGptProviderInOpenCode,
+} from "./nano-gpt.js";
+import { OptionHelpers, Some } from "fp-sdk";
 import type { ILogger } from "./logging.js";
 
 type LogLevel = "debug" | "info" | "error" | "warn";
@@ -59,10 +65,29 @@ export const PpqPlugin: Plugin = async ({ client }) => {
                 `${packageJson.name} v${packageJson.version} initializing...\r\n`
             );
 
-            const models = await fetchPpqModelsForOpenCode(logger);
-            registerPpqProviderInOpenCode(config, models, logger);
+            const ppqModels = await fetchPpqModelsForOpenCode(logger);
+            registerPpqProviderInOpenCode(config, ppqModels, logger);
 
             logger.log(`Successfully loaded models for ${ppqProviderName}`);
+
+            const maybeNanoGptApiKey = OptionHelpers.ofObj(
+                process.env[nanoGptApiKeyEnvVarName]
+            );
+            const nanoGptModels = await fetchNanoGptModelsForOpenCode(
+                maybeNanoGptApiKey,
+                logger
+            );
+
+            const nanoGptProviderApiKey =
+                maybeNanoGptApiKey instanceof Some
+                    ? maybeNanoGptApiKey.value
+                    : nanoGptApiKeyEnvVarName;
+            await registerNanoGptProviderInOpenCode(
+                config,
+                nanoGptModels,
+                nanoGptProviderApiKey,
+                logger
+            );
 
             await logger.flush();
         },
