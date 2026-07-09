@@ -8,7 +8,7 @@ import {
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { Empty, Some, Nothing, type Option, OptionHelpers } from "fp-sdk";
-import type { Logger } from "./awto-pi-lot.js";
+import type { Logger } from "./logging.js";
 
 interface NanoGptPricing {
     prompt: number;

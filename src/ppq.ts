@@ -3,7 +3,7 @@ import type {
     ProviderModelConfig,
 } from "@earendil-works/pi-coding-agent";
 import { Empty, OptionHelpers, Some } from "fp-sdk";
-import type { Logger } from "./awto-pi-lot.js";
+import type { Logger } from "./logging.js";
 
 interface PpqPricing {
     input_per_1M_tokens: number;
