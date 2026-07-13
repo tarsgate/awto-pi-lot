@@ -34,7 +34,11 @@
 		"pay-as-you-go",
 		"autoclaw",
 		"bitcoin",
-		"lightning"
+		"lightning",
+		"opencode",
+		"opencode-plugin",
+		"plugin",
+		"extension"
 	],
 	"license": "MIT",
 	"homepage": "https://github.com/tarsgate/awto-pi-lot#readme",
@@ -50,6 +54,7 @@
 	},
 	"devDependencies": {
 		"@earendil-works/pi-coding-agent": "0.79.9",
+		"@opencode-ai/plugin": "1.4.6",
 		"prettier": "2.8.3",
 		"@biomejs/biome": "2.3.5",
 		"@types/node": "22.10.5",
