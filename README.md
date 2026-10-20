@@ -1,6 +1,6 @@
 # awto-pi-lot [![NPM Version](https://img.shields.io/npm/v/awto-pi-lot)](https://www.npmjs.com/package/awto-pi-lot)
 
-awto-pi-lot is an extension for [pi-coding-agent](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) that adds support for [PPQ.ai](https://ppq.ai/) & [NanoGPT](https://nano-gpt.com/) providers.
+awto-pi-lot is an extension for [pi-coding-agent](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) that adds support for [PPQ.ai](https://ppq.ai/), [NanoGPT](https://nano-gpt.com/) & [MixRoute](https://mixroute.ai/) providers.
 
 
 ## Info
@@ -42,13 +42,14 @@ You can authenticate with an [auth.json](https://github.com/earendil-works/pi/bl
 ```
 {
   "ppq": { "type": "api_key", "key": "sk-..." },
-  "nanogpt": { "type": "api_key", "key": "sk-nano-..." }
+  "nanogpt": { "type": "api_key", "key": "sk-nano-..." },
+  "mixroute": { "type": "api_key", "key": "sk-..." }
 }
 ```
 
 And place in `~/.pi/agent/auth.json`.
 
-Using env vars (PPQ_API_KEY, NANOGPT_API_KEY) is also supported but not recommended, because security tools like [skynot](https://github.com/tarsgate/skynot) or [pi-less-yolo](https://github.com/cjermain/pi-less-yolo) might not work well with env vars OOTB.
+Using env vars (PPQ_API_KEY, NANOGPT_API_KEY, MIXROUTE_API_KEY) is also supported but not recommended, because security tools like [skynot](https://github.com/tarsgate/skynot) or [pi-less-yolo](https://github.com/cjermain/pi-less-yolo) might not work well with env vars OOTB.
 
 ---
 
