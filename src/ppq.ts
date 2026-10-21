@@ -4,6 +4,7 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 import { Empty, OptionHelpers, Some } from "fp-sdk";
 import type { Logger } from "./awto-pi-lot.js";
+import { getBaseUrlFromModelsJson } from "./helpers.js";
 
 interface PpqPricing {
     input_per_1M_tokens: number;
@@ -33,6 +34,7 @@ const providerId = "ppq";
 export const providerName = "PPQ.ai";
 const apiKeyEnvVarName = "PPQ_API_KEY";
 export const ppqApiBaseUrl = "https://api.ppq.ai";
+const ppqProviderId = "ppq";
 
 function isMetaModel(modelId: string): boolean {
     const lowered = modelId.toLowerCase();
@@ -166,10 +168,16 @@ export function registerPpqProvider(
         );
         return;
     }
+    const maybeCustomBaseUrl = getBaseUrlFromModelsJson(ppqProviderId);
+    const baseUrl =
+        maybeCustomBaseUrl instanceof Some
+            ? maybeCustomBaseUrl.value
+            : ppqApiBaseUrl;
     pi.registerProvider(providerId, {
         name: providerName,
-        baseUrl: ppqApiBaseUrl,
+        baseUrl: baseUrl,
         api: "openai-completions",
+        headers: { "x-target-url": `${ppqApiBaseUrl}/chat/completions` },
         apiKey: apiKeyEnvVarName,
         models: models,
     });
