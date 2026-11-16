@@ -106,11 +106,25 @@ jobs:
 
       - name: Test extension loading
         run: |
-          # tee makes exitCode not propagate (which is what we want because even if
-          # extension loads successfully, it will abort due to 'No API Key found')
-          (./pi/pi --print "dummy prompt" 2>&1 | tee output.txt)
+          # retry a few times because fetching models from the providers can fail
+          # intermittently (e.g. ECONNRESET)
+          for attempt in 1 2 3; do
+            echo "=== Attempt $attempt ==="
 
-          # therefore, we check the output for success or not (word "parallel" is printed as part of string "Successfully loaded models from ... and ... in parallel")
-          grep --quiet parallel output.txt
-          # --null-data is to scan whole file, not line by line
-          grep --invert-match --quiet --null-data --ignore-case error output.txt
+            # tee makes exitCode not propagate (which is what we want because even if
+            # extension loads successfully, it will abort due to 'No API Key found')
+            (./pi/pi --print "dummy prompt" 2>&1 | tee output.txt)
+
+            # therefore, we check the output for success or not (word "parallel" is printed as part of string "Successfully loaded models from ... and ... in parallel")
+            # --null-data is to scan whole file, not line by line
+            if grep --quiet parallel output.txt &&
+               grep --invert-match --quiet --null-data --ignore-case error output.txt; then
+              exit 0
+            fi
+
+            echo "Attempt $attempt failed, retrying..." >&2
+            sleep 5
+          done
+
+          echo "ERROR: extension loading failed after 3 attempts" >&2
+          exit 1
