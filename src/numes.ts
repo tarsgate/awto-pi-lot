@@ -1,74 +1,114 @@
-import type {
-    ExtensionAPI,
-    ProviderModelConfig,
+import {
+    type ExtensionAPI,
+    type ProviderModelConfig,
+    getAgentDir,
 } from "@earendil-works/pi-coding-agent";
+import { existsSync, readFileSync } from "fs";
+import { join } from "path";
 import { Empty, Nothing, type Option, OptionHelpers, Some } from "fp-sdk";
 import type { Logger } from "./awto-pi-lot.js";
 
-interface NumesPrice {
-    cost: string;
-    currency: string;
-    scope: string;
-    type: string;
-    unit: string;
+interface NumesRates {
+    prompt: string;
+    completion: string;
+    request: string;
+    input_cache_read?: string;
+    input_cache_write?: string;
+}
+
+interface NumesPricing extends NumesRates {
+    usd_rates?: NumesRates;
+}
+
+interface NumesReasoning {
+    default_effort: string | null;
+    default_enabled: boolean;
+    mandatory: boolean;
+    supports_max_tokens: boolean;
+    supported_efforts: string[];
+}
+
+interface NumesArchitecture {
     modality: string;
+    input_modalities: string[];
+    output_modalities: string;
+    tokenizer: string;
 }
 
 interface NumesModel {
-    compatible_request_id: string;
+    id: string;
     name: string;
     context_length: number;
-    max_output_length: number;
-    input_modalities: Array<string>;
-    output_modalities: Array<string>;
-    supported_parameters: Array<string>;
-    lowest_prices: Array<NumesPrice>;
-    lowest_output_prices: Array<NumesPrice>;
+    architecture: NumesArchitecture;
+    pricing: NumesPricing;
+    supported_parameters: string[];
+    top_provider: {
+        context_length: number;
+        max_completion_tokens: number;
+    };
+    billing_currency: "USD" | "BTC";
+    maximum_output_length: number;
+    embeddings: boolean;
+    supported_hosted_tools?: string[];
+    reasoning?: NumesReasoning;
 }
 
 interface NumesModelsListResponse {
     data: Array<NumesModel>;
-    meta: {
-        next_cursor?: string | null;
-        total: number;
-    };
 }
 
 const providerId = "numes";
 export const providerName = "Numes.ai";
 const apiKeyEnvVarName = "NUMES_API_KEY";
 const numesBaseUrl = "https://api.numes.ai/api/v1";
-const numesCatalogueUrl = "https://numes.ai/api/public-catalogue/models";
 // Numes.ai rejects max_tokens outside 1..131072
 const numesMaxOutputTokens = 131_072;
 const numesDefaultOutputTokens = 8_192;
 const numesDefaultContextWindow = 128_000;
 
-async function fetchModels(logger: Logger): Promise<Array<NumesModel>> {
+export function getNumesAiApiKey(): Option<string> {
+    const envKey = process.env[apiKeyEnvVarName];
+    if (envKey) {
+        return OptionHelpers.ofObj(envKey);
+    }
+    const authJsonPath = join(getAgentDir(), "auth.json");
+    if (existsSync(authJsonPath)) {
+        const auth = JSON.parse(readFileSync(authJsonPath, "utf-8")) as Record<
+            string,
+            { key?: string }
+        >;
+        if (Object.hasOwn(auth, providerId)) {
+            return OptionHelpers.ofObj(auth[providerId].key);
+        }
+    }
+    return Nothing;
+}
+
+async function fetchModels(
+    apiKey: string,
+    logger: Logger
+): Promise<Array<NumesModel>> {
     try {
         logger.log(`Fetching models from ${providerName}...`);
-        const models: Array<NumesModel> = Empty.array();
-        let cursor: Option<string> = Nothing;
-        do {
-            const url = new URL(numesCatalogueUrl);
-            url.searchParams.set("limit", "100");
-            if (cursor instanceof Some) {
-                url.searchParams.set("cursor", cursor.value);
-            }
-            const response = await fetch(url, {
-                headers: { Accept: "application/json" },
-            });
-            if (response.ok === false) {
-                logger.error(
-                    `Failed to fetch ${providerName} models due to HTTP error; status: ${response.status}`
-                );
-                return Empty.array();
-            }
-            const responseJson =
-                (await response.json()) as NumesModelsListResponse;
-            models.push(...responseJson.data);
-            cursor = OptionHelpers.ofObj(responseJson.meta.next_cursor);
-        } while (cursor instanceof Some);
+
+        const url = new URL(`${numesBaseUrl}/models`);
+        url.searchParams.set("supported_parameters", "tools");
+        url.searchParams.set("output_modalities", "text");
+        const response = await fetch(url, {
+            headers: {
+                Accept: "application/json",
+                Authorization: `Bearer ${apiKey}`,
+            },
+        });
+        if (response.ok === false) {
+            logger.error(
+                `Failed to fetch ${providerName} models due to HTTP error; status: ${response.status}`
+            );
+            return Empty.array();
+        }
+        const responseJson = (await response.json()) as NumesModelsListResponse;
+        const models = responseJson.data;
+
         logger.log(`Fetched ${models.length} models from ${providerName}`);
         return models;
     } catch (error) {
@@ -90,71 +130,82 @@ function filterModels(
         }
 
         // only include models that produce text
-        if (model.output_modalities.includes("text") === false) {
+        if (
+            model.architecture.input_modalities.includes("text") === false ||
+            model.architecture.output_modalities.includes("text") === false
+        ) {
             continue;
         }
 
-        // encrypted models require the encrypted client path
-        if (model.compatible_request_id.includes(":e2ee") === true) {
-            continue;
-        }
-
-        const inputModalities = model.input_modalities.filter(
+        const inputModalities = model.architecture.input_modalities.filter(
             (modality): modality is "text" | "image" =>
                 modality === "text" || modality === "image"
         );
-        const inputPrice = OptionHelpers.ofObj(
-            model.lowest_prices.find(
-                (price) => price.scope === "input" && price.type === "prompt"
-            )
-        );
-        const outputPrice = OptionHelpers.ofObj(
-            model.lowest_output_prices.find(
-                (price) =>
-                    price.scope === "output" && price.type === "completion"
-            )
-        );
-        const supportsReasoning =
-            model.supported_parameters.includes("reasoning");
+
+        const usdIndexedRates = OptionHelpers.ofObj(model.pricing.usd_rates);
+        const pricing =
+            usdIndexedRates instanceof Some
+                ? usdIndexedRates.value
+                : model.pricing;
+        // catalogue prices are per token, pi expects USD per million tokens
+        const priceMultiplier = 1000000;
+        const inputPrice = Number.parseFloat(pricing.prompt) * priceMultiplier;
+        const outputPrice =
+            Number.parseFloat(pricing.completion) * priceMultiplier;
+
+        const maybeCacheRead = OptionHelpers.ofObj(pricing.input_cache_read);
+        const cacheRead =
+            maybeCacheRead instanceof Some
+                ? Number.parseFloat(maybeCacheRead.value) * priceMultiplier
+                : 0.0;
+        const maybeCacheWrite = OptionHelpers.ofObj(pricing.input_cache_write);
+        const cacheWrite =
+            maybeCacheWrite instanceof Some
+                ? Number.parseFloat(maybeCacheWrite.value) * priceMultiplier
+                : 0.0;
+
+        const reasoning = OptionHelpers.ofObj(model.reasoning);
         const maxOutputLength =
-            model.max_output_length === 0
+            model.maximum_output_length === 0
                 ? numesDefaultOutputTokens
-                : model.max_output_length;
+                : model.maximum_output_length;
         const maxTokens = Math.min(maxOutputLength, numesMaxOutputTokens);
         const contextWindow =
             model.context_length === 0
                 ? numesDefaultContextWindow
                 : model.context_length;
 
+        let thinkingLevelMap = {};
+        if (reasoning instanceof Some) {
+            for (const effort of reasoning.value.supported_efforts) {
+                thinkingLevelMap[effort] = effort;
+            }
+        }
+
         models.push({
-            id: model.compatible_request_id,
+            id: model.id,
             name: model.name,
-            reasoning: supportsReasoning,
+            reasoning: reasoning.isSome(),
             input: inputModalities,
-            // catalogue prices are per token, pi expects USD per million tokens
             cost: {
-                input:
-                    inputPrice instanceof Some
-                        ? Number(inputPrice.value.cost) * 1_000_000
-                        : 0,
-                output:
-                    outputPrice instanceof Some
-                        ? Number(outputPrice.value.cost) * 1_000_000
-                        : 0,
-                cacheRead: 0,
-                cacheWrite: 0,
+                input: inputPrice,
+                output: outputPrice,
+                cacheRead: cacheRead,
+                cacheWrite: cacheWrite,
             },
+            thinkingLevelMap: thinkingLevelMap,
             contextWindow: contextWindow,
             maxTokens: maxTokens,
             // Numes.ai rejects unknown request fields and expects max_tokens
             compat: {
                 supportsStore: false,
                 supportsDeveloperRole: false,
-                supportsReasoningEffort: supportsReasoning,
+                supportsReasoningEffort:
+                    reasoning instanceof Some
+                        ? reasoning.value.supported_efforts.length > 0
+                        : false,
                 maxTokensField: "max_tokens",
-                ...(supportsReasoning === true
-                    ? { thinkingFormat: "openrouter" }
-                    : {}),
+                ...(reasoning.isSome() ? { thinkingFormat: "openrouter" } : {}),
             },
         } as ProviderModelConfig);
     }
@@ -166,9 +217,10 @@ function filterModels(
 }
 
 export async function fetchNumesModels(
+    apiKey: string,
     logger: Logger
 ): Promise<Array<ProviderModelConfig>> {
-    const apiModels = await fetchModels(logger);
+    const apiModels = await fetchModels(apiKey, logger);
     const models = filterModels(apiModels, logger);
     if (models.length === 0) {
         logger.error(

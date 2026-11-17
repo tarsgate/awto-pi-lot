@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const packageJson = require("../package.json");
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { Empty } from "fp-sdk";
+import { Empty, Some } from "fp-sdk";
 import {
     fetchPpqModels,
     providerName as ppqProviderName,
@@ -14,6 +14,7 @@ import {
     registerNanoGptProvider,
 } from "./nano-gpt.js";
 import {
+    getNumesAiApiKey,
     fetchNumesModels,
     providerName as numesProviderName,
     registerNumesProvider,
@@ -65,10 +66,17 @@ async function setupNanoGptProvider(pi: ExtensionAPI) {
 
 async function setupNumesProvider(pi: ExtensionAPI) {
     const logger = new Logger();
-    const models = await fetchNumesModels(logger);
-    registerNumesProvider(pi, models, logger);
-    logger.flush();
-    return true;
+    const apiKey = getNumesAiApiKey();
+    if (apiKey instanceof Some) {
+        const models = await fetchNumesModels(apiKey.value, logger);
+        registerNumesProvider(pi, models, logger);
+        logger.flush();
+        return true;
+    } else {
+        logger.log(`Cannot fetch ${numesProviderName} models without API key.`);
+        logger.flush();
+        return false;
+    }
 }
 
 export default async function (pi: ExtensionAPI) {
