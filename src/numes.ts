@@ -25,12 +25,12 @@ interface NumesReasoning {
     default_enabled: boolean;
     mandatory: boolean;
     supports_max_tokens: boolean;
-    supported_efforts: string[];
+    supported_efforts: Array<string>;
 }
 
 interface NumesArchitecture {
     modality: string;
-    input_modalities: string[];
+    input_modalities: Array<string>;
     output_modalities: string;
     tokenizer: string;
 }
@@ -41,7 +41,7 @@ interface NumesModel {
     context_length: number;
     architecture: NumesArchitecture;
     pricing: NumesPricing;
-    supported_parameters: string[];
+    supported_parameters: Array<string>;
     top_provider: {
         context_length: number;
         max_completion_tokens: number;
@@ -49,7 +49,7 @@ interface NumesModel {
     billing_currency: "USD" | "BTC";
     maximum_output_length: number;
     embeddings: boolean;
-    supported_hosted_tools?: string[];
+    supported_hosted_tools?: Array<string>;
     reasoning?: NumesReasoning;
 }
 
@@ -148,8 +148,7 @@ function filterModels(
         }
 
         const inputModalities = model.architecture.input_modalities.filter(
-            (modality): modality is "text" | "image" =>
-                modality === "text" || modality === "image"
+            (modality) => modality === "text"
         );
 
         const usdIndexedRates = OptionHelpers.ofObj(model.pricing.usd_rates);
@@ -158,7 +157,7 @@ function filterModels(
                 ? usdIndexedRates.value
                 : model.pricing;
         // catalogue prices are per token, pi expects USD per million tokens
-        const priceMultiplier = 1000000;
+        const priceMultiplier = 1_000_000;
         const inputPrice = Number.parseFloat(pricing.prompt) * priceMultiplier;
         const outputPrice =
             Number.parseFloat(pricing.completion) * priceMultiplier;
@@ -189,7 +188,10 @@ function filterModels(
         // model does not support are mapped to `null`, which removes them from
         // pi's thinking picker and prevents pi from sending a fallback effort
         // value the API would reject ("reasoning.effort is not supported").
-        const thinkingLevelMap: Record<string, string | null> = {};
+        const thinkingLevelMap = Empty.object() as Record<
+            string,
+            string | null
+        >;
         let supportsEfforts = false;
         if (reasoning instanceof Some) {
             const efforts = reasoning.value.supported_efforts.filter(
@@ -234,7 +236,9 @@ function filterModels(
                 supportsDeveloperRole: false,
                 supportsReasoningEffort: supportsEfforts,
                 maxTokensField: "max_tokens",
-                ...(supportsEfforts ? { thinkingFormat: "openrouter" } : {}),
+                ...(supportsEfforts
+                    ? { thinkingFormat: "openrouter" }
+                    : Empty.object()),
             },
         } as ProviderModelConfig);
     }

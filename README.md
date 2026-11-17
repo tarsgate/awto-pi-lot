@@ -51,7 +51,7 @@ And place in `~/.pi/agent/auth.json`.
 
 Using env vars (PPQ_API_KEY, NANOGPT_API_KEY, NUMES_API_KEY) is also supported but not recommended, because security tools like [skynot](https://github.com/tarsgate/skynot) or [pi-less-yolo](https://github.com/cjermain/pi-less-yolo) might not work well with env vars OOTB.
 
-Note: Numes.ai models are fetched from its public catalogue without an API key, but a key is still required to actually run requests.
+Note: Numes.ai models are fetched only if API key is present, because model availability depends on the key billing parameters (BTC or USD).
 
 ---
 
