@@ -4,6 +4,7 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 import { Empty, OptionHelpers, Some } from "fp-sdk";
 import type { Logger } from "./awto-pi-lot.js";
+import { fetch, Agent } from "undici";
 
 interface PpqPricing {
     input_per_1M_tokens: number;
@@ -48,7 +49,13 @@ function isMetaModel(modelId: string): boolean {
 async function fetchModels(logger: Logger): Promise<Array<PpqModel>> {
     try {
         logger.log(`Fetching models from ${providerName}...`);
-        const response = await fetch(`${ppqApiBaseUrl}/v1/models`);
+        // Increase timeout (from default 10 seconds) to lower probability of errors when fetching models.
+        const agent = new Agent({
+            connect: { timeout: 20_000 },
+        });
+        const response = await fetch(`${ppqApiBaseUrl}/v1/models`, {
+            dispatcher: agent,
+        });
         if (!response.ok) {
             logger.error(
                 `Failed to fetch ${providerName} models due to HTTP error; status: ${response.status}`
