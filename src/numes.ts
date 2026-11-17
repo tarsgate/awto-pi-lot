@@ -65,6 +65,16 @@ const numesBaseUrl = "https://api.numes.ai/api/v1";
 const numesMaxOutputTokens = 131_072;
 const numesDefaultOutputTokens = 8_192;
 const numesDefaultContextWindow = 128_000;
+// pi's standard thinking levels; see getSupportedThinkingLevels() in pi
+const piThinkingLevels = [
+    "off",
+    "minimal",
+    "low",
+    "medium",
+    "high",
+    "xhigh",
+    "max",
+] as const;
 
 export function getNumesAiApiKey(): Option<string> {
     const envKey = process.env[apiKeyEnvVarName];
@@ -175,17 +185,39 @@ function filterModels(
                 ? numesDefaultContextWindow
                 : model.context_length;
 
-        let thinkingLevelMap = {};
+        // Map Numes.ai effort names to pi standard thinking levels. Levels the
+        // model does not support are mapped to `null`, which removes them from
+        // pi's thinking picker and prevents pi from sending a fallback effort
+        // value the API would reject ("reasoning.effort is not supported").
+        const thinkingLevelMap: Record<string, string | null> = {};
+        let supportsEfforts = false;
         if (reasoning instanceof Some) {
-            for (const effort of reasoning.value.supported_efforts) {
-                thinkingLevelMap[effort] = effort;
+            const efforts = reasoning.value.supported_efforts.filter(
+                (effort) => effort.trim().length > 0
+            );
+            supportsEfforts = efforts.length > 0;
+            if (supportsEfforts) {
+                for (const level of piThinkingLevels) {
+                    thinkingLevelMap[level] = null;
+                }
+                for (const effort of efforts) {
+                    const piLevel = effort === "none" ? "off" : effort;
+                    if (
+                        (piThinkingLevels as ReadonlyArray<string>).includes(
+                            piLevel
+                        )
+                    ) {
+                        thinkingLevelMap[piLevel] = effort;
+                    }
+                }
+                logger.log(`${model.id}: ${JSON.stringify(thinkingLevelMap)}`);
             }
         }
 
         models.push({
             id: model.id,
             name: model.name,
-            reasoning: reasoning.isSome(),
+            reasoning: supportsEfforts,
             input: inputModalities,
             cost: {
                 input: inputPrice,
@@ -200,12 +232,9 @@ function filterModels(
             compat: {
                 supportsStore: false,
                 supportsDeveloperRole: false,
-                supportsReasoningEffort:
-                    reasoning instanceof Some
-                        ? reasoning.value.supported_efforts.length > 0
-                        : false,
+                supportsReasoningEffort: supportsEfforts,
                 maxTokensField: "max_tokens",
-                ...(reasoning.isSome() ? { thinkingFormat: "openrouter" } : {}),
+                ...(supportsEfforts ? { thinkingFormat: "openrouter" } : {}),
             },
         } as ProviderModelConfig);
     }
