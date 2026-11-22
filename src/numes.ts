@@ -218,7 +218,6 @@ function filterModels(
                         thinkingLevelMap[piLevel] = effort;
                     }
                 }
-                logger.log(`${model.id}: ${JSON.stringify(thinkingLevelMap)}`);
             }
         }
 

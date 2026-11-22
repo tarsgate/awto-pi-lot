@@ -76,7 +76,17 @@ test("invalid effort entries do not discard valid efforts", async (t) => {
         })
     );
 
-    const [model] = await fetchNumesModels("test-key", new Logger());
+    const logger = new Logger();
+    const log = t.mock.method(logger, "log");
+    const [model] = await fetchNumesModels("test-key", logger);
+    assert.deepEqual(
+        log.mock.calls.map((call) => call.arguments),
+        [
+            ["Fetching models from Numes.ai..."],
+            ["Fetched 1 models from Numes.ai"],
+            ["Found 1 compatible models from Numes.ai"],
+        ]
+    );
     assert.equal(model.reasoning, true);
     assert.equal(model.thinkingLevelMap?.low, "low");
     assert.equal(model.thinkingLevelMap?.high, "high");
