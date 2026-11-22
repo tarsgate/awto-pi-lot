@@ -25,7 +25,7 @@ interface NumesReasoning {
     default_enabled: boolean;
     mandatory: boolean;
     supports_max_tokens: boolean;
-    supported_efforts: Array<string>;
+    supported_efforts?: Array<string> | null;
 }
 
 interface NumesArchitecture {
@@ -50,7 +50,7 @@ interface NumesModel {
     maximum_output_length: number;
     embeddings: boolean;
     supported_hosted_tools?: Array<string>;
-    reasoning?: NumesReasoning;
+    reasoning?: NumesReasoning | null;
 }
 
 interface NumesModelsListResponse {
@@ -193,9 +193,15 @@ function filterModels(
             string | null
         >;
         let supportsEfforts = false;
-        if (reasoning instanceof Some) {
+        // A reasoning object does not guarantee a configurable effort list.
+        // Validate the API data before using array or string methods.
+        if (
+            reasoning instanceof Some &&
+            Array.isArray(reasoning.value.supported_efforts)
+        ) {
             const efforts = reasoning.value.supported_efforts.filter(
-                (effort) => effort.trim().length > 0
+                (effort) =>
+                    typeof effort === "string" && effort.trim().length > 0
             );
             supportsEfforts = efforts.length > 0;
             if (supportsEfforts) {
