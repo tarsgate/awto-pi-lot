@@ -2,7 +2,7 @@ import type {
     ExtensionAPI,
     ProviderModelConfig,
 } from "@earendil-works/pi-coding-agent";
-import { Empty, OptionHelpers, Some } from "fp-sdk";
+import { Empty, Option, Some } from "fp-sdk";
 import type { Logger } from "./awto-pi-lot.js";
 
 interface PpqPricing {
@@ -72,14 +72,14 @@ async function filterModels(
         const models: Array<ProviderModelConfig> = Empty.array();
 
         for (const model of apiModels) {
-            const maybeSupportedParameters = OptionHelpers.ofObj(
+            const maybeSupportedParameters = Option.ofObj(
                 model.supported_parameters
             );
             const supportedParameters =
                 maybeSupportedParameters instanceof Some
                     ? maybeSupportedParameters.value
                     : Empty.array();
-            const architecture = OptionHelpers.ofObj(model.architecture);
+            const architecture = Option.ofObj(model.architecture);
 
             // pi requires models to have tool support
             if (
