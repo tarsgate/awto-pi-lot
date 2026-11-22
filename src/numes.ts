@@ -5,7 +5,7 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-import { Empty, Nothing, type Option, OptionHelpers, Some } from "fp-sdk";
+import { Dyn, Empty, Nothing, Option, Some } from "fp-sdk";
 import type { Logger } from "./awto-pi-lot.js";
 
 interface NumesRates {
@@ -79,7 +79,7 @@ const piThinkingLevels = [
 export function getNumesAiApiKey(): Option<string> {
     const envKey = process.env[apiKeyEnvVarName];
     if (envKey) {
-        return OptionHelpers.ofObj(envKey);
+        return Option.ofObj(envKey);
     }
     const authJsonPath = join(getAgentDir(), "auth.json");
     if (existsSync(authJsonPath)) {
@@ -88,7 +88,7 @@ export function getNumesAiApiKey(): Option<string> {
             { key?: string }
         >;
         if (Object.hasOwn(auth, providerId)) {
-            return OptionHelpers.ofObj(auth[providerId].key);
+            return Option.ofObj(auth[providerId].key);
         }
     }
     return Nothing;
@@ -151,7 +151,7 @@ function filterModels(
             (modality) => modality === "text"
         );
 
-        const usdIndexedRates = OptionHelpers.ofObj(model.pricing.usd_rates);
+        const usdIndexedRates = Option.ofObj(model.pricing.usd_rates);
         const pricing =
             usdIndexedRates instanceof Some
                 ? usdIndexedRates.value
@@ -162,18 +162,18 @@ function filterModels(
         const outputPrice =
             Number.parseFloat(pricing.completion) * priceMultiplier;
 
-        const maybeCacheRead = OptionHelpers.ofObj(pricing.input_cache_read);
+        const maybeCacheRead = Option.ofObj(pricing.input_cache_read);
         const cacheRead =
             maybeCacheRead instanceof Some
                 ? Number.parseFloat(maybeCacheRead.value) * priceMultiplier
                 : 0.0;
-        const maybeCacheWrite = OptionHelpers.ofObj(pricing.input_cache_write);
+        const maybeCacheWrite = Option.ofObj(pricing.input_cache_write);
         const cacheWrite =
             maybeCacheWrite instanceof Some
                 ? Number.parseFloat(maybeCacheWrite.value) * priceMultiplier
                 : 0.0;
 
-        const reasoning = OptionHelpers.ofObj(model.reasoning);
+        const reasoning = Option.ofObj(model.reasoning);
         const maxOutputLength =
             model.maximum_output_length === 0
                 ? numesDefaultOutputTokens
@@ -195,13 +195,19 @@ function filterModels(
         let supportsEfforts = false;
         // A reasoning object does not guarantee a configurable effort list.
         // Validate the API data before using array or string methods.
-        if (
-            reasoning instanceof Some &&
-            Array.isArray(reasoning.value.supported_efforts)
-        ) {
-            const efforts = reasoning.value.supported_efforts.filter(
-                (effort) =>
-                    typeof effort === "string" && effort.trim().length > 0
+        const supportedEfforts =
+            reasoning instanceof Some
+                ? Dyn.tryCast(reasoning.value.supported_efforts).to(Array)
+                : Nothing;
+        if (supportedEfforts instanceof Some) {
+            const efforts = supportedEfforts.value.flatMap(
+                (effort: unknown) => {
+                    const maybeEffort = Dyn.tryCast(effort).to(String);
+                    return maybeEffort instanceof Some &&
+                        maybeEffort.value.trim().length > 0
+                        ? [maybeEffort.value]
+                        : Empty.array<string>();
+                }
             );
             supportsEfforts = efforts.length > 0;
             if (supportsEfforts) {
