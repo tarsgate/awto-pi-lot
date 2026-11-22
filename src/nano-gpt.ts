@@ -7,7 +7,7 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-import { Empty, Some, Nothing, type Option, OptionHelpers } from "fp-sdk";
+import { Empty, Some, Nothing, Option } from "fp-sdk";
 import type { Logger } from "./awto-pi-lot.js";
 
 interface NanoGptPricing {
@@ -112,7 +112,7 @@ function filterModels(
 function getNanoGptApiKey(): Option<string> {
     const envKey = process.env[apiKeyEnvVarName];
     if (envKey) {
-        return OptionHelpers.ofObj(envKey);
+        return Option.ofObj(envKey);
     }
     const authJsonPath = join(getAgentDir(), "auth.json");
     if (existsSync(authJsonPath)) {
@@ -121,7 +121,7 @@ function getNanoGptApiKey(): Option<string> {
             { key?: string }
         >;
         if (Object.hasOwn(auth, providerId)) {
-            return OptionHelpers.ofObj(auth[providerId].key);
+            return Option.ofObj(auth[providerId].key);
         }
     }
     return Nothing;
