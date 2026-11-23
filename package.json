@@ -2,7 +2,7 @@
 	"name": "awto-pi-lot",
 	"version": "3.3.0",
 	"type": "module",
-	"description": "pi-coding-agent extension that adds support for PPQ.ai & Nano-GPT.com providers along with their auto models",
+	"description": "pi-coding-agent extension that adds support for PPQ.ai, Nano-GPT.com & Numes.ai providers along with their auto models",
 	"pi": {
 		"extensions": [
 			"./index.ts"
@@ -11,6 +11,7 @@
 	"scripts": {
 		"clean": "shx rm -rf dist",
 		"build": "npx tsc && shx cp README.md dist/",
+		"test": "tsx --test test/*.test.ts",
 		"check": "npm install && npm run build && biome lint --write --error-on-warnings . && npm run format",
 		"format": "npm install && npx --no-install prettier --quote-props=consistent --write ./src/**/*.ts"
 	},
@@ -28,6 +29,8 @@
 		"ppq.ai",
 		"nanogpt",
 		"nano-gpt",
+		"numes",
+		"numes.ai",
 		"automodel",
 		"auto-model",
 		"accountless",
