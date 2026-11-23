@@ -5,8 +5,9 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
-import { Dyn, Empty, Nothing, Option, Some } from "fp-sdk";
+import { Dyn, Empty, Nothing, Option, Some, None } from "fp-sdk";
 import type { Logger } from "./awto-pi-lot.js";
+import { setTimeout } from "node:timers/promises";
 
 interface NumesRates {
     prompt: string;
@@ -94,6 +95,43 @@ export function getNumesAiApiKey(): Option<string> {
     return Nothing;
 }
 
+async function fetchModelsJson(
+    apiKey: string,
+    logger: Logger,
+    retriesLeft: number = 5
+): Promise<Option<NumesModelsListResponse>> {
+    const url = new URL(`${numesBaseUrl}/models`);
+    url.searchParams.set("supported_parameters", "tools");
+    url.searchParams.set("output_modalities", "text");
+    const response = await fetch(url, {
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${apiKey}`,
+        },
+    });
+    if (response.ok === false) {
+        if (response.status === 503) {
+            if (retriesLeft <= 0) {
+                return Nothing;
+            }
+            logger.log(
+                `Fetching  ${providerName} models failed with ${response.status}; retrying...`
+            );
+            const millisecondsInSecond = 1000;
+            // wait before trying again
+            await setTimeout(millisecondsInSecond);
+
+            return await fetchModelsJson(apiKey, logger, retriesLeft - 1);
+        } else {
+            logger.error(
+                `Failed to fetch ${providerName} models due to HTTP error; status: ${response.status}`
+            );
+            return Nothing;
+        }
+    }
+    return new Some((await response.json()) as NumesModelsListResponse);
+}
+
 async function fetchModels(
     apiKey: string,
     logger: Logger
@@ -101,23 +139,11 @@ async function fetchModels(
     try {
         logger.log(`Fetching models from ${providerName}...`);
 
-        const url = new URL(`${numesBaseUrl}/models`);
-        url.searchParams.set("supported_parameters", "tools");
-        url.searchParams.set("output_modalities", "text");
-        const response = await fetch(url, {
-            headers: {
-                Accept: "application/json",
-                Authorization: `Bearer ${apiKey}`,
-            },
-        });
-        if (response.ok === false) {
-            logger.error(
-                `Failed to fetch ${providerName} models due to HTTP error; status: ${response.status}`
-            );
+        const responseJson = await fetchModelsJson(apiKey, logger);
+        if (responseJson instanceof None) {
             return Empty.array();
         }
-        const responseJson = (await response.json()) as NumesModelsListResponse;
-        const models = responseJson.data;
+        const models = responseJson.value.data;
 
         logger.log(`Fetched ${models.length} models from ${providerName}`);
         return models;
