@@ -184,13 +184,12 @@ function filterModels(
                 ? numesDefaultContextWindow
                 : model.context_length;
 
-        // Map Numes.ai effort names to pi standard thinking levels. Levels the
-        // model does not support are mapped to `null`, which removes them from
-        // pi's thinking picker and prevents pi from sending a fallback effort
-        // value the API would reject ("reasoning.effort is not supported").
+        // Map Numes.ai effort names to pi standard thinking levels. Unsupported
+        // levels use Nothing internally, converted to null at the pi boundary
+        // to hide them from the thinking picker and prevent rejected efforts.
         const thinkingLevelMap = Empty.object() as Record<
             string,
-            string | null
+            Option<string>
         >;
         let supportsEfforts = false;
         // A reasoning object does not guarantee a configurable effort list.
@@ -212,7 +211,7 @@ function filterModels(
             supportsEfforts = efforts.length > 0;
             if (supportsEfforts) {
                 for (const level of piThinkingLevels) {
-                    thinkingLevelMap[level] = null;
+                    thinkingLevelMap[level] = Nothing;
                 }
                 for (const effort of efforts) {
                     const piLevel = effort === "none" ? "off" : effort;
@@ -221,7 +220,7 @@ function filterModels(
                             piLevel
                         )
                     ) {
-                        thinkingLevelMap[piLevel] = effort;
+                        thinkingLevelMap[piLevel] = new Some(effort);
                     }
                 }
             }
@@ -238,7 +237,12 @@ function filterModels(
                 cacheRead: cacheRead,
                 cacheWrite: cacheWrite,
             },
-            thinkingLevelMap: thinkingLevelMap,
+            thinkingLevelMap: Object.fromEntries(
+                Object.entries(thinkingLevelMap).map(([level, effort]) => [
+                    level,
+                    effort instanceof Some ? effort.value : null,
+                ])
+            ),
             contextWindow: contextWindow,
             maxTokens: maxTokens,
             // Numes.ai rejects unknown request fields and expects max_tokens
